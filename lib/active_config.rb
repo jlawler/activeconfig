@@ -329,7 +329,6 @@ class ActiveConfig
 
     # Get array of all the existing files file the config name.
     config_files = _get_config_files(name)
-#    $stderr.puts "CONFIG_FILES = #{config_files.inspect}"
     # STDERR.puts "load_config_files(#{name.inspect})"
     
     # Get all the data from all yaml files into as hashes
@@ -428,8 +427,7 @@ class ActiveConfig
   def _get_config_files(name) 
     files = [ ]
     # alexg: splatting *suffix allows us to deal with multipart suffixes 
-    # jwl:  The order of these two loops is key:  It was originally _config_path 
-    # but that is broken because the order these get returned is the order of
+    # The order these get returned is the order of
     # priority of override.
     name_no_overlay, suffixes = _suffixes(name)
     suffixes.map { | suffix | [ name_no_overlay, *suffix ].compact.join('_') }.each do | name_x |
@@ -772,6 +770,7 @@ class ActiveConfig
     value
   end
 
+  #If you are using this in production code, you fail.
   def reload(force = false)
     if force || ! @@reload_disabled
       return unless ['development', 'integration'].include?(_mode)
