@@ -108,7 +108,6 @@ class ActiveConfig
 
   # The cached general suffix list.
   # Invalidated if @@_mode changes.
-  @@__suffixes = nil
 
   # This is an array of filename suffixes facilitates overriding 
   # configuration (.i.e 'global_local', 'global_development'). 
@@ -257,7 +256,7 @@ class ActiveConfig
 
   # DON'T CALL THIS IN production.
   def _flush_cache
-    @@__suffixes = nil
+    @suffixes = nil
     @@suffixes = { }
     @@cache = { } 
     @@cache_files = { } 
@@ -689,9 +688,6 @@ class ActiveConfig
     get_config_file(file)[key]
   end
 
-  ##
-  # 
-  #
   def with_file(name, *args)
     # STDERR.puts "with_file(#{name.inspect}, #{args.inspect})"; result = 
     args.inject(get_config_file(name)) { | v, i | 
@@ -776,9 +772,6 @@ class ActiveConfig
     value
   end
 
-
-  #DO NOT USE in production, if you think you need to use this in production
-  #DONT!!!!
   def reload(force = false)
     if force || ! @@reload_disabled
       return unless ['development', 'integration'].include?(_mode)
@@ -787,7 +780,7 @@ class ActiveConfig
     nil
   end
                     
-protected
+  protected
 
   ##
   # Get complete file name, including file path for the given config name
@@ -796,10 +789,5 @@ protected
   def filename_for_name(name, dir = _config_path[0])
     File.join(dir, name.to_s + '.yml')
   end
-   
-  ##
-  #
-  #
-
 end
 
