@@ -7,6 +7,7 @@ require 'active_support'
 require 'active_support/core_ext'
 require 'active_support/core_ext/hash/indifferent_access'
 require 'hash_config'
+require 'suffixes'
 require 'erb'
 
 
@@ -61,70 +62,18 @@ require 'erb'
 #
 
 class ActiveConfig
+  attr :_suffix_symbols
   EMPTY_ARRAY = [ ].freeze unless defined? EMPTY_ARRAY
   EMPTY_HASH = { }.freeze unless defined? EMPTY_HASH
-
-  # Use ACTIVE_CONFIG_HOSTNAME environment variable to
-  # test host-based configurations.
-  def _hostname
-    @hostname ||= (
-       ENV['ACTIVE_CONFIG_HOSTNAME'] || 
-       Socket.gethostname
-       ).dup.freeze
-  end
-  def _hostname= host
-    @hostname=host.dup.freeze
-  end
-
-  # Short hostname: remove all chars after first ".".
-  def _hostname_short
-    @hostname_short||=_hostname.sub(/\..*$/, '').freeze
-  end
-
-  # This is the configuration mode.
-  # Eg.: development, production, integration, test.
-  # Defaults to RAILS_ENV, but can be overridden.
-  def _mode
-    @_mode||=begin
-      if defined?(RAILS_ENV)
-         _mode=RAILS_ENV 
-      else
-         _mode=nil
-      end
-    end
-    @_mode
-  end
-  def _mode= x
-    if @_mode != x
-      # Invalidate cached values dependent on self._mode.
-      self._flush_cache
-    end
-    @_mode = x && x.dup.freeze
-  end
 
   # The cached general suffix list.
   # Invalidated if @@_mode changes.
 
-  # This is an array of filename suffixes facilitates overriding 
-  # configuration (.i.e 'global_local', 'global_development'). 
-  # These files get loaded in order of the array the last file 
-  # loaded gets splatted on top of everything there. 
-  # Ex. database_whiskey.yml overrides database_integration.yml 
-  #     overrides database.yml
+  #There is a suffixes object which handles all the options and structure
+  #for suffixes
   def _suffixes
-    @suffixes ||=
-      [nil, 
-       [:local],                  # [ ] incase _mode == nil
-       :config, :local_config, 
-       _mode, 
-       [_mode, :local].compact,   # compact incase _mode == nil
-       _hostname_short, [_hostname_short, :config_local],
-       _hostname, [_hostname, :config_local]
-      ].
-      uniq.
-      freeze
+    @_suffixes_obj||=Suffixes.new
   end
-
 
   # Returns a list of directories to search for
   # configuration files.
@@ -167,16 +116,6 @@ class ActiveConfig
   # E.g. 'gb' for UK website.
   #
   # Defaults from ENV['ACTIVE_CONFIG_OVERLAY'].
-  def _overlay
-    @@overlay ||= 
-      (x = ENV['ACTIVE_CONFIG_OVERLAY']) &&
-      x.dup.freeze
-  end
-
-  def _overlay=(x)
-    _flush_cache if @@overlay != x
-    @@overlay = x && x.dup.freeze
-  end
 
 
   # Returns a list of suffixes to try for a given config name.
@@ -190,37 +129,7 @@ class ActiveConfig
   def _get_file_suffixes(name)
     name = name.to_s
     @@suffixes[name] ||= 
-      begin
-        ol = _overlay
-        name_x = name.dup
-        if name_x.sub!(/_([A-Z]+)$/, '')
-          ol = $1
-        end
-        name_x.freeze
-        result = 
-        if ol
-          ol_ = ol.upcase
-          ol = ol.downcase
-          x = [ ]
-          _suffixes.each do | suffix |
-            # Standard, no overlay:
-            # e.g.: global_<suffix>.yml
-            x << suffix
-
-            # Overlay:
-            # e.g.: global_(US|GB)_<suffix>.yml
-            x << [ ol_, suffix ]
-          end
-          [ name_x, x.freeze ]
-        else
-          [ name.dup.freeze, _suffixes ]
-        end
-
-#        $stderr.puts "#{name} => #{result.inspect}"
-        result.freeze
-
-        result
-      end
+      [name, _suffixes.suffixes]
   end
 
 
@@ -770,8 +679,15 @@ class ActiveConfig
   #   ActiveConfig.global.foo   => ActiveConfig.with_file(:global).foo
   #
   def method_missing(method, *args)
-    value = with_file(method, *args)
-    value
+    if method.to_s=~/^_(.*)/
+#    $stderr.puts "AC MM #{method}"
+#      $stderr.puts method
+      _flush_cache 
+      return _suffixes.send($1, *args)
+    else 
+      value = with_file(method, *args)
+      value
+    end
   end
 
   #If you are using this in production code, you fail.

@@ -24,10 +24,24 @@ require 'test/unit'
 require 'fileutils' # FileUtils.touch
 require 'benchmark'
 
-
+AC=ActiveConfig.new
 class ActiveConfig::Test < Test::Unit::TestCase
   def active_config
-    @active_config||=ActiveConfig.new
+    return AC 
+    @active_config||= ActiveConfig.new :suffixes  =>[
+      nil, 
+      [:overlay, nil], 
+      [:local], 
+      [:overlay, [:local]], 
+      :config, 
+      [:overlay, :config], 
+      :local_config, 
+      [:overlay, :local_config], 
+      :hostname, 
+      [:overlay, :hostname], 
+      [:hostname, :config_local], 
+      [:overlay, [:hostname, :config_local]]
+    ] 
   end
   def setup
     super
