@@ -62,7 +62,6 @@ require 'erb'
 #
 
 class ActiveConfig
-  attr :_suffix_symbols
   EMPTY_ARRAY = [ ].freeze unless defined? EMPTY_ARRAY
 
   #There is a suffixes object which handles all the options and structure
@@ -425,22 +424,10 @@ class ActiveConfig
   end
 
 
-  # If config files have changed,
-  # Caches are flushed, on_load triggers are run.
-  def check_config_changed
-    changed=[]
-      @@cache_hash.keys.dup.each do | name |
-        if _check_config_changed(name)
-          changed << name
-        end
-      end
-    changed.empty? ? nil : changed
-  end
 
-
-  def _check_config_changed(name)
-    changed = nil
-
+  def _check_config_changed(iname=nil)
+    iname=iname.nil? ?  @@cache_hash.keys.dup : [*iname]
+    ret=iname.map{ | name |
     # STDERR.puts "ActiveConfig: config changed? #{name.inspect} reload_disabled = #{@@reload_disabled}" if @@verbose
     if config_changed?(name) && ! @@reload_disabled 
       STDERR.puts "ActiveConfig: config changed #{name.inspect}" if @@verbose
@@ -449,12 +436,12 @@ class ActiveConfig
 
         # force on_load triggers.
         _fire_on_load(name)
+        name
       end
-
-      changed = true
     end
-
-    changed
+    }.compact
+    return nil if ret.empty?
+    ret
   end
 
 
@@ -552,7 +539,7 @@ class ActiveConfig
       result = yield
     ensure
       @@reload_disabled = reload_disabled_save
-      check_config_changed unless @@reload_disabled
+      _check_config_changed unless @@reload_disabled
     end
     result
   end
