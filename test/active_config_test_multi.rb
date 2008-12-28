@@ -28,14 +28,17 @@ require 'benchmark'
 
 
 class ActiveConfig::TestMulti < Test::Unit::TestCase
+  def active_config
+    @active_config||=ActiveConfig.new
+  end
   def setup
     super
     begin
-      ActiveConfig._flush_cache
-      ActiveConfig._verbose = nil # default
-      ActiveConfig.reload(true)
-      ActiveConfig._reload_disabled = nil # default
-      ActiveConfig._reload_delay = nil # default
+      active_config._flush_cache
+      active_config._verbose = nil # default
+      active_config.reload(true)
+      active_config._reload_disabled = nil # default
+      active_config._reload_delay = nil # default
     rescue => err
       # NOTHING
     end
@@ -47,7 +50,7 @@ class ActiveConfig::TestMulti < Test::Unit::TestCase
   end
 
   def test_multi
-      assert_equal  "WIN",  ActiveConfig.test.default
+      assert_equal  "WIN",  active_config.test.default
   end  
 
 end

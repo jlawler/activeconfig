@@ -89,20 +89,21 @@ class ActiveConfig
   # Eg.: development, production, integration, test.
   # Defaults to RAILS_ENV, but can be overridden.
   def _mode
-    unless @@_mode
-      # avoid undefined constant error.
-      if x = defined?(RAILS_ENV) ? RAILS_ENV : nil
-        _mode = x
+    @_mode||=begin
+      if defined?(RAILS_ENV)
+         _mode=RAILS_ENV 
+      else
+         _mode=nil
       end
     end
-    @@_mode
+    @_mode
   end
   def _mode= x
-    if @@_mode != x
+    if @_mode != x
       # Invalidate cached values dependent on self._mode.
-      _flush_cache
+      self._flush_cache
     end
-    @@_mode = x && x.dup.freeze
+    @_mode = x && x.dup.freeze
   end
 
 
