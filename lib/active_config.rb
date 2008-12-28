@@ -45,7 +45,7 @@ require 'erb'
 #  --Notice that the hash produced is the result of merging the above
 #  config files in a particular order
 #
-#  The overlay order of the config files is defined by ActiveConfig.__suffixes:
+#  The overlay order of the config files is defined by ActiveConfig._get_file_suffixes:
 #  * nil
 #  * _local
 #  * _config
@@ -73,16 +73,13 @@ class ActiveConfig
        ).dup.freeze
   end
   def hostname= host
-    @hostname=host
+    @hostname=host.dup.freeze
   end
 
   # Short hostname: remove all chars after first ".".
   def hostname_short
     @hostname_short||=hostname.sub(/\..*$/, '').freeze
   end
-
-  # The current mode: (i.e. RAILS_ENV).
-  @@_mode = nil
 
   # This is the configuration mode.
   # Eg.: development, production, integration, test.
@@ -105,7 +102,6 @@ class ActiveConfig
     @_mode = x && x.dup.freeze
   end
 
-
   # The cached general suffix list.
   # Invalidated if @@_mode changes.
 
@@ -115,7 +111,7 @@ class ActiveConfig
   # loaded gets splatted on top of everything there. 
   # Ex. database_whiskey.yml overrides database_integration.yml 
   #     overrides database.yml
-  def suffixes
+  def _suffixes
     @suffixes ||=
       [nil, 
        [:local],                  # [ ] incase _mode == nil
@@ -141,6 +137,14 @@ class ActiveConfig
   #
   def initialize opts={}
     @config_path=opts[:path] if opts[:path]
+    @root_file=opts[:root_file] if opts[:root_file]
+    @suffixes = opts[:suffixes] if opts[:suffixes]
+  end
+  def _root_file
+    @root_file || 'global'
+  end
+  def _root_file= rootfile
+    @root_file=rootfile
   end
   def _config_path
     @config_path||= ENV['ACTIVE_CONFIG_PATH']
@@ -183,7 +187,7 @@ class ActiveConfig
   # This allows code to specifically ask for config overlays
   # for a particular locale.
   #
-  def _suffixes(name)
+  def _get_file_suffixes(name)
     name = name.to_s
     @@suffixes[name] ||= 
       begin
@@ -198,7 +202,7 @@ class ActiveConfig
           ol_ = ol.upcase
           ol = ol.downcase
           x = [ ]
-          suffixes.each do | suffix |
+          _suffixes.each do | suffix |
             # Standard, no overlay:
             # e.g.: global_<suffix>.yml
             x << suffix
@@ -209,7 +213,7 @@ class ActiveConfig
           end
           [ name_x, x.freeze ]
         else
-          [ name.dup.freeze, suffixes ]
+          [ name.dup.freeze, _suffixes ]
         end
 
 #        $stderr.puts "#{name} => #{result.inspect}"
@@ -417,7 +421,7 @@ class ActiveConfig
 
   ## 
   # Returns a list of all relavant config files as specified
-  # by _suffixes list.
+  # by _get_file_suffixes list.
   # Each element is an Array, containing:
   #   [ "the-top-level-config-name",
   #     "the-suffixed-config-name",
@@ -429,7 +433,7 @@ class ActiveConfig
     # alexg: splatting *suffix allows us to deal with multipart suffixes 
     # The order these get returned is the order of
     # priority of override.
-    name_no_overlay, suffixes = _suffixes(name)
+    name_no_overlay, suffixes = _get_file_suffixes(name)
     suffixes.map { | suffix | [ name_no_overlay, *suffix ].compact.join('_') }.each do | name_x |
       _config_path.reverse.each do | dir |
         filename = filename_for_name(name_x, dir)
@@ -682,7 +686,7 @@ class ActiveConfig
   ##
   # Gets a value from the global config file
   #
-  def [](key, file=:global)
+  def [](key, file=_root_file)
     get_config_file(file)[key]
   end
 
@@ -724,7 +728,7 @@ class ActiveConfig
   end
 
   def global_sym(*args)
-    with_file('global', *args)
+    with_file(_root_file, *args)
   end
 
 
