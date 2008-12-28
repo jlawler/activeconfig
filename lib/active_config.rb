@@ -97,10 +97,12 @@ class ActiveConfig
   end
   def _config_path
     @config_path||= ENV['ACTIVE_CONFIG_PATH']
-    @_config_path ||=
+  end
+  def _config_path_ary
+    @config_path_ary ||=
       begin
-        path_sep = (@config_path =~ /;/) ? /;/ : /:/ # Make Wesha happy
-        path = @config_path.split(path_sep).reject{ | x | x.empty? }
+        path_sep = (_config_path =~ /;/) ? /;/ : /:/ # Make Wesha happy
+        path = _config_path.split(path_sep).reject{ | x | x.empty? }
         path = 
           path.collect! do | x | 
             x.freeze
@@ -111,17 +113,7 @@ class ActiveConfig
   end
 
 
-  # Specifies an additional overlay suffix.
-  #
-  # E.g. 'gb' for UK website.
-  #
-  # Defaults from ENV['ACTIVE_CONFIG_OVERLAY'].
-
-
   # Returns a list of suffixes to try for a given config name.
-  #
-  # A config name with an explicit overlay (e.g.: 'name_GB')
-  # overrides any current _overlay.
   #
   # This allows code to specifically ask for config overlays
   # for a particular locale.
@@ -344,7 +336,7 @@ class ActiveConfig
     # priority of override.
     name_no_overlay, suffixes = _get_file_suffixes(name)
     suffixes.map { | suffix | [ name_no_overlay, *suffix ].compact.join('_') }.each do | name_x |
-      _config_path.reverse.each do | dir |
+      _config_path_ary.reverse.each do | dir |
         filename = filename_for_name(name_x, dir)
         files <<
         [ name,
@@ -705,7 +697,7 @@ class ActiveConfig
   # Get complete file name, including file path for the given config name
   # and directory.
   #
-  def filename_for_name(name, dir = _config_path[0])
+  def filename_for_name(name, dir = _config_path_ary[0])
     File.join(dir, name.to_s + '.yml')
   end
 end

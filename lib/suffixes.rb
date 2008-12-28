@@ -1,6 +1,7 @@
 class ActiveConfig
-  
   class Suffixes
+    attr_writer :priority
+    attr :symbols
     def overlay= new_overlay
       @symbols[:overlay]=(new_overlay.respond_to?(:upcase) ? new_overlay.upcase : new_overlay)
     end
