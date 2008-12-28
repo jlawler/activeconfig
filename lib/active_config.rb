@@ -374,7 +374,7 @@ class ActiveConfig
                   :config_name => name,
                   :config_files => config_files,
                 }
-                active_config = ActiveConfig._make_indifferent(active_config)
+                active_config = _make_indifferent(active_config)
 
                 val = ERB.new(val).result(binding)
               end
