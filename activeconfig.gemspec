@@ -1,8 +1,6 @@
-require 'rubygems'
-
 spec = Gem::Specification.new do |s|
-s.name = 'active_config'
-s.version = '0.1.'+Time.now.strftime('%Y%m%d%H%M%S')
+s.name = 'activeconfig'
+s.version = '0.1.'+ Time.now.strftime('%Y%m%d%H%M%S')
 s.author = 'Jeremy Lawler'
 s.email = 'jlawler@cashnetusa.com'
 s.homepage = 'http://localhost'
