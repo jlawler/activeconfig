@@ -367,8 +367,6 @@ class ActiveConfig
             val == nil || 
             mtime != last_mtime
           
-          # STDERR.puts "mtime #{name.inspect} #{filename.inspect} changed #{mtime != last_mtime} : #{mtime.inspect} #{last_mtime.inspect}" if @@verbose && name_x == 'test'
-
           # mtime is nil if file does not exist.
           if mtime 
             begin
@@ -457,13 +455,6 @@ class ActiveConfig
       end
     end
 
-    # $stderr.puts "_get_config_files #{name} => "
-    # $stderr.puts "#{files.select{|x| x[3]}.inspect}"
-    #$stderr.puts "["
-    #files.each{|file|
-    #$stderr.puts "\t#{file.inspect}"
-    #}
-    #$stderr.puts "]"
     files
   end
 
@@ -752,22 +743,6 @@ class ActiveConfig
     with_file('global', *args)
   end
 
-  
-  # Is this used anywhere -- kurt@cashnetusa.com 2007/03/29
-  def self.can_write_file?(name)
-    filename = filename_for_name(name)
-    !File.exists?(filename) || File.writable?(filename)
-  end
-
-
-  # Is this used anywhere -- kurt@cashnetusa.com 2007/03/29
-  def self.write_file(name, obj=nil)    
-    raise exception([:writing_empty_file, name]) unless obj
-    File.open(filename_for_name(name), 'w') do |out|
-      YAML.dump(obj, out)
-    end
-    load_config_files(name, true)
-  end
 
   ## 
   # Disables any reloading of config,
@@ -791,48 +766,6 @@ class ActiveConfig
   end
 
 
-  # Is this used anymore? -- kurt@cashnetusa.com 2007/03/27
-  def self.rec_merge(hasha, hashb)
-    raise(:deprecated)
-    hasha = {}.merge(hasha || {})
-    hashb = {}.merge(hashb || {})
-    return hashb if hasha.empty?
-    return hasha if hashb.empty?    
-    hasha.each_pair{|k,v| 
-      if v.is_a?(Hash)
-        hasha[k]=rec_merge(v,hashb[k]) 
-      else
-        hasha[k]=hashb[k] || v 
-      end
-    }
-    hasha
-  end 
-
-
-  # Not used anymore? -- kurt@cashnetusa.com 2007/03/27
-  def self.recursive_hash_merge(hashes, *path)
-    raise(:deprecated)
-    hashes = hashes.compact
-    case 
-      when path.empty?
-        #this will merge in hashes recursively (its pretty expensive)
-        hashes.inject({}){|retval, hash| retval.weave(hash, false) }#rec_merge(retval,hash)}
-      when hashes.empty? 
-        nil 
-      else
-        a = recursive_hash_merge(hashes.last(hashes.size-1), *path)
-        b = path.inject(hashes.first) do |cfg, key|
-          case cfg
-            when Hash then cfg[key.to_s]
-            when Array then key.is_a?(Integer) ? cfg[key] : nil
-            else nil
-          end
-        end
-        a.is_a?(Hash) && b.is_a?(Hash) ? a.weave(b, false) : (a || b) #rec_merge(a,b) : (a || b)
-      end
-  end
-
-
   ##
   # Creates a dottable hash for all Hash objects, recursively.
   #
@@ -849,9 +782,7 @@ class ActiveConfig
   #   ActiveConfig.global.foo   => ActiveConfig.with_file(:global).foo
   #
   def self.method_missing(method, *args)
-    # STDERR.puts "#{self}.method_missing(#{method.inspect}, #{args.inspect})"
     value = with_file(method, *args)
-    # STDERR.puts "#{self}.method_missing(#{method.inspect}, #{args.inspect}) => #{value.inspect}"
     value
   end
 
