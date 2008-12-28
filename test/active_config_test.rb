@@ -26,13 +26,16 @@ require 'benchmark'
 
 
 class ActiveConfig::Test < Test::Unit::TestCase
+  def active_config
+    @active_config||=ActiveConfig.new
+  end
   def setup
     super
     begin
-      ActiveConfig._verbose = nil # default
-      ActiveConfig.reload(true)
-      ActiveConfig._reload_disabled = nil # default
-      ActiveConfig._reload_delay = nil # default
+      active_config._verbose = nil # default
+      active_config.reload(true)
+      active_config._reload_disabled = nil # default
+      active_config._reload_delay = nil # default
     rescue => err
       # NOTHING
     end
@@ -45,24 +48,24 @@ class ActiveConfig::Test < Test::Unit::TestCase
 
 
   def test_mode
-    assert_equal RAILS_ENV, ActiveConfig._mode
+    assert_equal RAILS_ENV, active_config._mode
   end
 
   def test_suffixes
   end
 
   def test_basic
-    assert_equal true, ActiveConfig.test.secure_login
+    assert_equal true, active_config.test.secure_login
   end
 
 
   def test_default
-    assert_equal "yo!", ActiveConfig.test.default
+    assert_equal "yo!", active_config.test.default
   end
 
 
   def test_indifferent
-    assert h = ActiveConfig.test
+    assert h = active_config.test
     # STDERR.puts "h = #{h.inspect}:#{h.class}"
 
     assert hstr = h['hash_1']
@@ -75,7 +78,7 @@ class ActiveConfig::Test < Test::Unit::TestCase
 
 
   def test_dot_notation
-    assert h = ActiveConfig.test
+    assert h = active_config.test
     assert h = h.hash_1
     assert h.foo
   end
@@ -83,108 +86,108 @@ class ActiveConfig::Test < Test::Unit::TestCase
 
   def test_dot_notation_overrun
     assert_raise NoMethodError do
-      ActiveConfig.test.hash_1.foo.a_bridge_too_far
+      active_config.test.hash_1.foo.a_bridge_too_far
     end
   end
 
 
   def test_array_notation
-    assert h = ActiveConfig.test[:hash_1]
-    assert a = ActiveConfig.test[:array_1]
+    assert h = active_config.test[:hash_1]
+    assert a = active_config.test[:array_1]
   end
 
 
   def test_function_notation
-    assert h = ActiveConfig.test(:hash_1, 'foo')
-    assert_equal nil, ActiveConfig.test(:hash_1, 'foo', :too_far)
-    assert_equal 'c', ActiveConfig.test(:array_1, 2)
-    assert_equal nil, ActiveConfig.test(:array_1, "2")
+    assert h = active_config.test(:hash_1, 'foo')
+    assert_equal nil, active_config.test(:hash_1, 'foo', :too_far)
+    assert_equal 'c', active_config.test(:array_1, 2)
+    assert_equal nil, active_config.test(:array_1, "2")
   end
 
 
   def test_immutable
-    assert ActiveConfig.test.frozen?
-    assert ActiveConfig.test.hash_1.frozen?
+    assert active_config.test.frozen?
+    assert active_config.test.hash_1.frozen?
     assert_raise TypeError do
-      ActiveConfig.test.hash_1[:foo] = 1
+      active_config.test.hash_1[:foo] = 1
     end
   end
 
 
   def test_to_yaml
-    assert ActiveConfig.test.to_yaml
+    assert active_config.test.to_yaml
   end
 
 
   def test_disable_reload
     # Clear out everything.
-    ActiveConfig.reload(true)
+    active_config.reload(true)
 
     # Reload delay
-    ActiveConfig._reload_delay = -1
-    # ActiveConfig._verbose = true
-    ActiveConfig._config_file_loaded = nil
+    active_config._reload_delay = -1
+    # active_config._verbose = true
+    active_config._config_file_loaded = nil
 
     # Get the name of a config file to touch.
-    assert cf1 = ActiveConfig._get_config_files("test")
+    assert cf1 = active_config._get_config_files("test")
     assert cf1 = cf1[0][2]
       
     v = nil
     th = nil
-    ActiveConfig.disable_reload do 
+    active_config.disable_reload do 
       # Make sure first access works inside disable reload.
-      assert th = ActiveConfig.test
-      assert_equal "foo", v = ActiveConfig.test.hash_1.foo
-      ActiveConfig._config_file_loaded = nil
+      assert th = active_config.test
+      assert_equal "foo", v = active_config.test.hash_1.foo
+      active_config._config_file_loaded = nil
 
       # Get access again and insure that file was not reloaded.
-      assert_equal v, ActiveConfig.test.hash_1.foo
-      assert th.object_id == ActiveConfig.test.object_id
-      assert ! ActiveConfig._config_file_loaded
+      assert_equal v, active_config.test.hash_1.foo
+      assert th.object_id == active_config.test.object_id
+      assert ! active_config._config_file_loaded
   
       # STDERR.puts "touching #{cf1.inspect}"
       FileUtils.touch(cf1)
 
-      assert_equal v, ActiveConfig.test.hash_1.foo
-      assert th.object_id == ActiveConfig.test.object_id
-      assert ! ActiveConfig._config_file_loaded
+      assert_equal v, active_config.test.hash_1.foo
+      assert th.object_id == active_config.test.object_id
+      assert ! active_config._config_file_loaded
     end
 
     # STDERR.puts "reload allowed"
-    assert ! ActiveConfig._config_file_loaded
-    assert th.object_id != ActiveConfig.test.object_id
-    assert_equal v, ActiveConfig.test.hash_1.foo
+    assert ! active_config._config_file_loaded
+    assert th.object_id != active_config.test.object_id
+    assert_equal v, active_config.test.hash_1.foo
 
-    assert ActiveConfig._config_file_loaded
-    assert_equal v, ActiveConfig.test.hash_1.foo
+    assert active_config._config_file_loaded
+    assert_equal v, active_config.test.hash_1.foo
      
 
     # Restore reload_delay
-    ActiveConfig._reload_delay = false
-    ActiveConfig._verbose = false
+    active_config._reload_delay = false
+    active_config._verbose = false
   end
 
 
   def test_hash_merge
-    assert_equal "foo", ActiveConfig.test.hash_1.foo
-    assert_equal "baz", ActiveConfig.test.hash_1.bar
-    assert_equal "bok", ActiveConfig.test.hash_1.bok
-    assert_equal "zzz", ActiveConfig.test.hash_1.zzz
+    assert_equal "foo", active_config.test.hash_1.foo
+    assert_equal "baz", active_config.test.hash_1.bar
+    assert_equal "bok", active_config.test.hash_1.bok
+    assert_equal "zzz", active_config.test.hash_1.zzz
   end
 
 
   def test_array
-    assert_equal [ 'a', 'b', 'c', 'd' ], ActiveConfig.test.array_1
+    assert_equal [ 'a', 'b', 'c', 'd' ], active_config.test.array_1
   end
 
 
   def test_index
-    assert_kind_of Hash, ActiveConfig.get_config_file(:test)
+    assert_kind_of Hash, active_config.get_config_file(:test)
   end
 
 
   def test_config_files
-    assert_kind_of Array, cf = ActiveConfig._get_config_files("test").select{|x| x[3]}
+    assert_kind_of Array, cf = active_config._get_config_files("test").select{|x| x[3]}
     # STDERR.puts "cf = #{cf.inspect}"
 
     if ENV['ACTIVE_CONFIG_OVERLAY']
@@ -214,11 +217,11 @@ class ActiveConfig::Test < Test::Unit::TestCase
 
 
   def test_config_changed
-    ActiveConfig.reload(true)
+    active_config.reload(true)
 
-    cf1 = ActiveConfig._config_files("test")
-    cf2 = ActiveConfig._get_config_files("test")
-    cf3 = ActiveConfig._config_files("test")
+    cf1 = active_config._config_files("test")
+    cf2 = active_config._get_config_files("test")
+    cf3 = active_config._config_files("test")
 
     file_to_touch = cf1[1][2]
 
@@ -233,21 +236,21 @@ class ActiveConfig::Test < Test::Unit::TestCase
     # Check that config_changed? is false, until touch.
     assert cf1.object_id != cf2.object_id
     assert_equal cf1, cf2
-    assert_equal false, ActiveConfig.config_changed?("test")
+    assert_equal false, active_config.config_changed?("test")
 
     # Touch a file.
     # $stderr.puts "file_to_touch = #{file_to_touch.inspect}"
     FileUtils.touch(file_to_touch)
-    cf2 = ActiveConfig._get_config_files("test")
+    cf2 = active_config._get_config_files("test")
     # Ensure that files were not reloaded until reload(true) below.
     assert cf1.object_id != cf2.object_id
     assert ! (cf1 === cf2)
-    assert_equal true, ActiveConfig.config_changed?("test")
+    assert_equal true, active_config.config_changed?("test")
 
     # Pull config again.
-    ActiveConfig.reload(true)
-    cf3 = ActiveConfig._config_files("test")
-    cf2 = ActiveConfig._get_config_files("test")
+    active_config.reload(true)
+    cf3 = active_config._config_files("test")
+    cf2 = active_config._get_config_files("test")
     # $stderr.puts "cf1.object_id = #{cf1.object_id}"
     # $stderr.puts "cf2.object_id = #{cf2.object_id}"
     # $stderr.puts "cf3.object_id = #{cf3.object_id}"
@@ -258,59 +261,59 @@ class ActiveConfig::Test < Test::Unit::TestCase
     assert cf1.object_id != cf3.object_id
     assert !(cf3 === cf1)
     assert (cf3 === cf2)
-    assert_equal false, ActiveConfig.config_changed?("test")
+    assert_equal false, active_config.config_changed?("test")
 
     # Pull config again, expect no changes.
-    cf4 = ActiveConfig._config_files("test")
+    cf4 = active_config._config_files("test")
     # STDERR.puts "cf3 = #{cf1.inspect}"
     # STDERR.puts "cf2 = #{cf2.inspect}"
     assert cf3.object_id == cf4.object_id
-    assert ActiveConfig._config_files("test")
-    assert_equal false, ActiveConfig.config_changed?("test")
+    assert active_config._config_files("test")
+    assert_equal false, active_config.config_changed?("test")
  
   end
 
 
   def test_check_reload_disabled
-    ActiveConfig.reload(true)
+    active_config.reload(true)
 
-    assert_kind_of Array, ActiveConfig._config_files('test')
+    assert_kind_of Array, active_config._config_files('test')
     
-    ActiveConfig._reload_disabled = true
+    active_config._reload_disabled = true
 
-    assert_kind_of Array, ActiveConfig.load_config_files('test')
+    assert_kind_of Array, active_config.load_config_files('test')
 
-    ActiveConfig._reload_disabled = nil
+    active_config._reload_disabled = nil
   end
 
 
   def test_on_load_callback
     # STDERR.puts "test_on_load_callback"
 
-    ActiveConfig.reload(true)
-    # ActiveConfig._verbose = 1
+    active_config.reload(true)
+    # active_config._verbose = 1
 
-    cf1 = ActiveConfig._config_files("test")
+    cf1 = active_config._config_files("test")
 
-    assert_equal "foo", ActiveConfig.test.hash_1.foo
+    assert_equal "foo", active_config.test.hash_1.foo
 
     sleep 1
 
     called_back = 0
 
-    ActiveConfig.on_load(:test) do
+    active_config.on_load(:test) do
       called_back += 1
       # STDERR.puts "on_load #{called_back}"
     end
 
     assert_equal 1, called_back
 
-    assert_equal "foo", ActiveConfig.test.hash_1.foo
+    assert_equal "foo", active_config.test.hash_1.foo
 
     
     # STDERR.puts "Not expecting config change."
-    assert_nil ActiveConfig.check_config_changed
-    assert_equal "foo", ActiveConfig.test.hash_1.foo
+    assert_nil active_config.check_config_changed
+    assert_equal "foo", active_config.test.hash_1.foo
     assert_equal 1, called_back
 
     file = cf1[0][2]
@@ -320,13 +323,13 @@ class ActiveConfig::Test < Test::Unit::TestCase
     File.chmod(0444, file)
 
     # STDERR.puts "Expect config change."
-    assert_not_nil ActiveConfig.check_config_changed
-    assert_equal "foo", ActiveConfig.test.hash_1.foo
+    assert_not_nil active_config.check_config_changed
+    assert_equal "foo", active_config.test.hash_1.foo
     assert_equal 2, called_back
 
     # STDERR.puts "Not expecting config change."
-    assert_nil ActiveConfig.check_config_changed
-    assert_equal "foo", ActiveConfig.test.hash_1.foo
+    assert_nil active_config.check_config_changed
+    assert_equal "foo", active_config.test.hash_1.foo
     assert_equal 2, called_back
 
     # STDERR.puts "test_on_load_callback: END"
@@ -334,53 +337,53 @@ class ActiveConfig::Test < Test::Unit::TestCase
 
 
   def test_overlay_by_name
-    assert_equal nil,   ActiveConfig._overlay
+    assert_equal nil,   active_config._overlay
 
-    assert_equal "foo", ActiveConfig.test.hash_1.foo
-    assert_equal "foo", ActiveConfig.test_GB.hash_1.foo
+    assert_equal "foo", active_config.test.hash_1.foo
+    assert_equal "foo", active_config.test_GB.hash_1.foo
 
-    assert_equal "bok", ActiveConfig.test.hash_1.bok
-    assert_equal "GB",  ActiveConfig.test_GB.hash_1.bok
+    assert_equal "bok", active_config.test.hash_1.bok
+    assert_equal "GB",  active_config.test_GB.hash_1.bok
 
-    assert_equal nil,   ActiveConfig.test.hash_1.gb
-    assert_equal "GB",  ActiveConfig.test_GB.hash_1.gb
+    assert_equal nil,   active_config.test.hash_1.gb
+    assert_equal "GB",  active_config.test_GB.hash_1.gb
   end
 
 
   def test_overlay_change
     begin
-      ActiveConfig._overlay = 'gb'
+      active_config._overlay = 'gb'
       
-      assert_equal "foo", ActiveConfig.test.hash_1.foo
-      assert_equal "foo", ActiveConfig.test_GB.hash_1.foo
-      assert_equal "foo", ActiveConfig.test_US.hash_1.foo
+      assert_equal "foo", active_config.test.hash_1.foo
+      assert_equal "foo", active_config.test_GB.hash_1.foo
+      assert_equal "foo", active_config.test_US.hash_1.foo
       
-      assert_equal "GB",  ActiveConfig.test.hash_1.bok
-      assert_equal "GB",  ActiveConfig.test_GB.hash_1.bok
-      assert_equal "US",  ActiveConfig.test_US.hash_1.bok
+      assert_equal "GB",  active_config.test.hash_1.bok
+      assert_equal "GB",  active_config.test_GB.hash_1.bok
+      assert_equal "US",  active_config.test_US.hash_1.bok
       
-      assert_equal "GB",  ActiveConfig.test.hash_1.gb
-      assert_equal "GB",  ActiveConfig.test_GB.hash_1.gb
-      assert_equal nil,   ActiveConfig.test_US.hash_1.gb
+      assert_equal "GB",  active_config.test.hash_1.gb
+      assert_equal "GB",  active_config.test_GB.hash_1.gb
+      assert_equal nil,   active_config.test_US.hash_1.gb
       
-      ActiveConfig._overlay = 'us'
+      active_config._overlay = 'us'
       
-      assert_equal "foo", ActiveConfig.test.hash_1.foo
-      assert_equal "foo", ActiveConfig.test_GB.hash_1.foo
-      assert_equal "foo", ActiveConfig.test_US.hash_1.foo
+      assert_equal "foo", active_config.test.hash_1.foo
+      assert_equal "foo", active_config.test_GB.hash_1.foo
+      assert_equal "foo", active_config.test_US.hash_1.foo
       
-      assert_equal "US", ActiveConfig.test.hash_1.bok
-      assert_equal "GB", ActiveConfig.test_GB.hash_1.bok
-      assert_equal "US", ActiveConfig.test_US.hash_1.bok
+      assert_equal "US", active_config.test.hash_1.bok
+      assert_equal "GB", active_config.test_GB.hash_1.bok
+      assert_equal "US", active_config.test_US.hash_1.bok
       
-      assert_equal  nil,  ActiveConfig.test.hash_1.gb
-      assert_equal "GB",  ActiveConfig.test_GB.hash_1.gb
-      assert_equal  nil,  ActiveConfig.test_US.hash_1.gb
+      assert_equal  nil,  active_config.test.hash_1.gb
+      assert_equal "GB",  active_config.test_GB.hash_1.gb
+      assert_equal  nil,  active_config.test_US.hash_1.gb
  
-      ActiveConfig._overlay = nil
+      active_config._overlay = nil
 
     ensure
-      ActiveConfig._overlay = nil
+      active_config._overlay = nil
     end
   end
 
@@ -395,7 +398,7 @@ class ActiveConfig::Test < Test::Unit::TestCase
     n = 10000
     bm = Benchmark.measure do 
       n.times do 
-        ActiveConfig.test.hash_1.foo
+        active_config.test.hash_1.foo
       end
     end
     STDERR.puts "\n#{n}.times =>#{bm}\n"
