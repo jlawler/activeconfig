@@ -64,10 +64,6 @@ require 'erb'
 class ActiveConfig
   attr :_suffix_symbols
   EMPTY_ARRAY = [ ].freeze unless defined? EMPTY_ARRAY
-  EMPTY_HASH = { }.freeze unless defined? EMPTY_HASH
-
-  # The cached general suffix list.
-  # Invalidated if @@_mode changes.
 
   #There is a suffixes object which handles all the options and structure
   #for suffixes
@@ -88,12 +84,10 @@ class ActiveConfig
     @config_path=opts[:path] if opts[:path]
     @root_file=opts[:root_file] if opts[:root_file]
     @suffixes = opts[:suffixes] if opts[:suffixes]
+    @root_file = opts[:root_file] || 'global' 
   end
   def _root_file
-    @root_file || 'global'
-  end
-  def _root_file= rootfile
-    @root_file=rootfile
+    @root_file ||= 'global'
   end
   def _config_path
     @config_path||= ENV['ACTIVE_CONFIG_PATH']
@@ -119,9 +113,7 @@ class ActiveConfig
   # for a particular locale.
   #
   def _get_file_suffixes(name)
-    name = name.to_s
-    @@suffixes[name] ||= 
-      [name, _suffixes.suffixes]
+    @@suffixes[name] ||= [name, _suffixes.suffixes]
   end
 
 
@@ -180,8 +172,7 @@ class ActiveConfig
   # and automatic reload checks.
   @@reload_delay = 300
   def _reload_delay=(x)
-    @@reload_delay = x ||
-      300
+    @@reload_delay = x || 300
   end
 
   # Flag indicating whether or not to log errors that occur 
@@ -273,13 +264,12 @@ class ActiveConfig
               if /^\s*#\s*ACTIVE_CONFIG\s*:\s*ERB/i.match(val)
                 # Prepare a object visible from ERb to
                 # allow basic substitutions into YAMLs.
-                active_config = {
+                active_config = HashWithIndifferentAccess.new({
                   :config_file => filename,
                   :config_directory => File.dirname(filename),
                   :config_name => name,
                   :config_files => config_files,
-                }
-                active_config = _make_indifferent(active_config)
+                })
 
                 val = ERB.new(val).result(binding)
               end
@@ -368,14 +358,6 @@ class ActiveConfig
     ! (@@cache_files[name] === _get_config_files(name))
   end
 
-  ## 
-  # Get the merged config hash for the named file.
-  #
-  def config_hash(name)
-    name = name.to_s # if name.is_a?(Symbol)
-    _config_hash(name)
-  end
-
 
   ## 
   # Returns a cached indifferent access faker hash merged
@@ -386,11 +368,9 @@ class ActiveConfig
     # STDERR.puts "_config_hash(#{name.inspect})"; result = 
     unless result = @@cache_hash[name]
       result = @@cache_hash[name] = 
-        _make_frozen(
-                     _make_indifferent(
+                     _make_indifferent_and_freeze(
                           _merge_hashes(
                                         load_config_files(name)))
-                     )
 
       STDERR.puts "_config_hash(#{name.inspect}): reloaded" if @@verbose
       
@@ -447,30 +427,19 @@ class ActiveConfig
 
   # If config files have changed,
   # Caches are flushed, on_load triggers are run.
-  def check_config_changed(name = nil)
-    changed = [ ]
-
-    # STDERR.puts "check_config_changed(#{name.inspect})"
-    if name == nil
+  def check_config_changed
+    changed=[]
       @@cache_hash.keys.dup.each do | name |
         if _check_config_changed(name)
           changed << name
         end
       end
-    else
-      name = name.to_s #  if name.is_a?(Symbol)
-      if _check_config_changed(name)
-        changed << name
-      end
-    end
-    STDERR.puts "check_config_changed(#{name.inspect}) => #{changed.inspect}" if @@verbose && ! changed.empty?
-
     changed.empty? ? nil : changed
   end
 
 
   def _check_config_changed(name)
-    changed = false
+    changed = nil
 
     # STDERR.puts "ActiveConfig: config changed? #{name.inspect} reload_disabled = #{@@reload_disabled}" if @@verbose
     if config_changed?(name) && ! @@reload_disabled 
@@ -501,88 +470,31 @@ class ActiveConfig
   # Recursively makes hashes into frozen IndifferentAccess ConfigFakerHash
   # Arrays are also traversed and frozen.
   #
-  def _make_indifferent(x)
+  def _make_indifferent_and_freeze(x)
     case x
     when HashConfig
       unless x.frozen?
         x.each_pair do | k, v |
-          x[k] = _make_indifferent(v)
+          x[k] = _make_indifferent_and_freeze(v)
         end
       end
-      x
     when Hash
       unless x.frozen?
         x = HashConfig.new.merge!(x)
         x.each_pair do | k, v |
-          x[k] = _make_indifferent(v)
+          x[k] = _make_indifferent_and_freeze(v)
         end
       end
       # STDERR.puts "x = #{x.inspect}:#{x.class}"
     when Array
       unless x.frozen?
         x.collect! do | v |
-          _make_indifferent(v)
+          _make_indifferent_and_freeze(v)
         end
       end
     end
-
-    x
+    x.freeze
   end
-
-  # Arrays are also traversed and frozen.
-  def _make_frozen(x)
-    case x
-    when Hash
-      unless x.frozen?
-        x.each_pair do | k, v |
-          _make_frozen(v)
-        end
-        x.freeze
-      end
-      # STDERR.puts "x = #{x.inspect}:#{x.class}"
-    when Array
-      unless x.frozen?
-        x.collect! do | v |
-          _make_frozen(v)
-        end
-        x.freeze
-      end
-    # Freeze Strings.
-    when String
-      x.freeze
-    end
-
-    x
-  end
-
-  # Returns a new configuration hash that is unfrozen.
-  def _unfreeze(x)
-    case x
-    when Hash
-      if x.frozen?
-        x = HashConfig.new.merge!(x)
-      end
-      x.each_pair do | k, v |
-        x[k] = _unfreeze(v)
-      end
-      # STDERR.puts "x = #{x.inspect}:#{x.class}"
-    when Array
-      if x.frozen?
-        x = x.dup
-      end
-      x.collect! do | v |
-        _unfreeze(v)
-      end
-    # Freeze Strings.
-    when String
-      if x.frozen?
-        x = x.dup
-      end
-    end
-    
-    x
-  end
-
 
   ##
   # Gets a value from the global config file
@@ -617,21 +529,12 @@ class ActiveConfig
     now = Time.now
     if (! @@last_auto_check[name]) || (now - @@last_auto_check[name]) > @@reload_delay
       @@last_auto_check[name] = now
-      check_config_changed(name)
+      _check_config_changed(name)
     end
     # result = 
     _config_hash(name)
     # STDERR.puts "get_config_file(#{name.inspect}) => #{result.inspect}"; result
   end
-  
-  def with_file_sym(file, *args)
-    with_file(file, *args)
-  end
-
-  def global_sym(*args)
-    with_file(_root_file, *args)
-  end
-
 
   ## 
   # Disables any reloading of config,
@@ -652,14 +555,6 @@ class ActiveConfig
       check_config_changed unless @@reload_disabled
     end
     result
-  end
-
-
-  ##
-  # Creates a dottable hash for all Hash objects, recursively.
-  #
-  def create_dottable_hash(value)
-    _make_frozen(_make_indifferent(value))
   end
 
   ##
