@@ -66,19 +66,19 @@ class ActiveConfig
 
   # Use ACTIVE_CONFIG_HOSTNAME environment variable to
   # test host-based configurations.
-  def hostname
+  def _hostname
     @hostname ||= (
        ENV['ACTIVE_CONFIG_HOSTNAME'] || 
        Socket.gethostname
        ).dup.freeze
   end
-  def hostname= host
+  def _hostname= host
     @hostname=host.dup.freeze
   end
 
   # Short hostname: remove all chars after first ".".
-  def hostname_short
-    @hostname_short||=hostname.sub(/\..*$/, '').freeze
+  def _hostname_short
+    @hostname_short||=_hostname.sub(/\..*$/, '').freeze
   end
 
   # This is the configuration mode.
@@ -118,8 +118,8 @@ class ActiveConfig
        :config, :local_config, 
        _mode, 
        [_mode, :local].compact,   # compact incase _mode == nil
-       hostname_short, [hostname_short, :config_local],
-       hostname, [hostname, :config_local]
+       _hostname_short, [_hostname_short, :config_local],
+       _hostname, [_hostname, :config_local]
       ].
       uniq.
       freeze
