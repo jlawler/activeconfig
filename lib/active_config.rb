@@ -3,10 +3,10 @@ require 'yaml'
 require 'hash_weave' # Hash#weave
 # REMOVE DEPENDENCY ON active_support.
 require 'rubygems'
-require 'hash_config'
 require 'active_support'
 require 'active_support/core_ext'
 require 'active_support/core_ext/hash/indifferent_access'
+require 'hash_config'
 require 'erb'
 
 
@@ -61,8 +61,6 @@ require 'erb'
 #
 
 class ActiveConfig
-  # include DogTag # Not needed? -- kurt@cashnetusa.com 2007/03/27
-
   EMPTY_ARRAY = [ ].freeze unless defined? EMPTY_ARRAY
   EMPTY_HASH = { }.freeze unless defined? EMPTY_HASH
 
