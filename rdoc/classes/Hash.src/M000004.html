@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html>
+<head>
+  <title>weave (Hash)</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+  <link rel="stylesheet" href="../.././rdoc-style.css" type="text/css" media="screen" />
+</head>
+<body class="standalone-code">
+  <pre><span class="ruby-comment cmt"># File lib/hash_weave.rb, line 29</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">weave</span>(<span class="ruby-identifier">h</span>, <span class="ruby-identifier">dont_clobber</span>=<span class="ruby-keyword kw">true</span>)
+    <span class="ruby-keyword kw">return</span> <span class="ruby-keyword kw">self</span> <span class="ruby-keyword kw">unless</span> <span class="ruby-identifier">h</span>
+    <span class="ruby-identifier">raise</span> <span class="ruby-constant">ArgumentError</span>, <span class="ruby-value str">&quot;Hash expected&quot;</span> <span class="ruby-keyword kw">unless</span> <span class="ruby-identifier">h</span>.<span class="ruby-identifier">kind_of?</span>(<span class="ruby-constant">Hash</span>)
+    <span class="ruby-identifier">s</span> = <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">dup</span> <span class="ruby-comment cmt"># self.clone does not remove freeze!</span>
+    <span class="ruby-identifier">h</span>.<span class="ruby-identifier">each</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">k</span>,<span class="ruby-identifier">node</span><span class="ruby-operator">|</span>
+      <span class="ruby-identifier">node_is_hash</span> = <span class="ruby-identifier">node</span>.<span class="ruby-identifier">kind_of?</span>(<span class="ruby-constant">Hash</span>)
+      <span class="ruby-identifier">node_is_array</span> = <span class="ruby-identifier">node</span>.<span class="ruby-identifier">kind_of?</span>(<span class="ruby-constant">Array</span>)
+      <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">s</span>.<span class="ruby-identifier">has_key?</span>(<span class="ruby-identifier">k</span>)
+        <span class="ruby-identifier">self_node_is_hash</span> = <span class="ruby-identifier">s</span>[<span class="ruby-identifier">k</span>].<span class="ruby-identifier">kind_of?</span>(<span class="ruby-constant">Hash</span>)
+        <span class="ruby-identifier">self_node_is_array</span> = <span class="ruby-identifier">s</span>[<span class="ruby-identifier">k</span>].<span class="ruby-identifier">kind_of?</span>(<span class="ruby-constant">Array</span>)
+        <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">self_node_is_hash</span>
+          <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">node_is_hash</span>
+            <span class="ruby-identifier">s</span>[<span class="ruby-identifier">k</span>] = <span class="ruby-identifier">s</span>[<span class="ruby-identifier">k</span>].<span class="ruby-identifier">weave</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">dont_clobber</span>)
+          <span class="ruby-keyword kw">elsif</span> <span class="ruby-identifier">node_is_array</span>
+            <span class="ruby-identifier">dont_clobber</span> <span class="ruby-value">? </span><span class="ruby-identifier">raise</span>(<span class="ruby-constant">ArgumentError</span>, <span class="ruby-value str">&quot;{} &lt;= [] is a tad meaningless&quot;</span>) <span class="ruby-operator">:</span> <span class="ruby-identifier">s</span>[<span class="ruby-identifier">k</span>] = <span class="ruby-identifier">node</span>
+          <span class="ruby-keyword kw">else</span>
+            <span class="ruby-identifier">s</span>[<span class="ruby-identifier">k</span>] = <span class="ruby-identifier">node</span>
+          <span class="ruby-keyword kw">end</span>
+        <span class="ruby-keyword kw">elsif</span> <span class="ruby-identifier">self_node_is_array</span>
+          <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">node_is_hash</span>
+            <span class="ruby-identifier">dont_clobber</span> <span class="ruby-value">? </span><span class="ruby-identifier">s</span>[<span class="ruby-identifier">k</span>] = <span class="ruby-identifier">s</span>[<span class="ruby-identifier">k</span>] <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">node</span> <span class="ruby-operator">:</span> <span class="ruby-identifier">s</span>[<span class="ruby-identifier">k</span>] = <span class="ruby-identifier">node</span>
+          <span class="ruby-keyword kw">elsif</span> <span class="ruby-identifier">node_is_array</span>
+            <span class="ruby-identifier">dont_clobber</span> <span class="ruby-value">? </span><span class="ruby-identifier">s</span>[<span class="ruby-identifier">k</span>] <span class="ruby-operator">+=</span> <span class="ruby-identifier">node</span> <span class="ruby-operator">:</span> <span class="ruby-identifier">s</span>[<span class="ruby-identifier">k</span>] = <span class="ruby-identifier">node</span>
+          <span class="ruby-keyword kw">else</span>
+            <span class="ruby-identifier">dont_clobber</span> <span class="ruby-value">? </span><span class="ruby-identifier">s</span>[<span class="ruby-identifier">k</span>] = <span class="ruby-identifier">s</span>[<span class="ruby-identifier">k</span>] <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">node</span> <span class="ruby-operator">:</span> <span class="ruby-identifier">s</span>[<span class="ruby-identifier">k</span>] = <span class="ruby-identifier">node</span>
+          <span class="ruby-keyword kw">end</span>
+        <span class="ruby-keyword kw">else</span>
+          <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">node_is_hash</span>
+            <span class="ruby-identifier">s</span>[<span class="ruby-identifier">k</span>] = <span class="ruby-identifier">node</span>
+          <span class="ruby-keyword kw">elsif</span> <span class="ruby-identifier">node_is_array</span>
+            <span class="ruby-identifier">dont_clobber</span> <span class="ruby-value">? </span><span class="ruby-identifier">s</span>[<span class="ruby-identifier">k</span>].<span class="ruby-identifier">unshift</span>( <span class="ruby-identifier">node</span> ) <span class="ruby-operator">:</span> <span class="ruby-identifier">s</span>[<span class="ruby-identifier">k</span>] = <span class="ruby-identifier">node</span>
+          <span class="ruby-keyword kw">else</span>
+            <span class="ruby-identifier">s</span>[<span class="ruby-identifier">k</span>] = <span class="ruby-identifier">node</span>
+          <span class="ruby-keyword kw">end</span>
+        <span class="ruby-keyword kw">end</span>
+      <span class="ruby-keyword kw">else</span>
+        <span class="ruby-identifier">s</span>[<span class="ruby-identifier">k</span>] = <span class="ruby-identifier">node</span>
+      <span class="ruby-keyword kw">end</span>
+    }
+    <span class="ruby-identifier">s</span>
+  <span class="ruby-keyword kw">end</span></pre>
+</body>
+</html>

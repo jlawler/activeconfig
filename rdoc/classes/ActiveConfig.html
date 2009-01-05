@@ -1,0 +1,790 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>Class: ActiveConfig</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+  <meta http-equiv="Content-Script-Type" content="text/javascript" />
+  <link rel="stylesheet" href=".././rdoc-style.css" type="text/css" media="screen" />
+  <script type="text/javascript">
+  // <![CDATA[
+
+  function popupCode( url ) {
+    window.open(url, "Code", "resizable=yes,scrollbars=yes,toolbar=no,status=no,height=150,width=400")
+  }
+
+  function toggleCode( id ) {
+    if ( document.getElementById )
+      elem = document.getElementById( id );
+    else if ( document.all )
+      elem = eval( "document.all." + id );
+    else
+      return false;
+
+    elemStyle = elem.style;
+    
+    if ( elemStyle.display != "block" ) {
+      elemStyle.display = "block"
+    } else {
+      elemStyle.display = "none"
+    }
+
+    return true;
+  }
+  
+  // Make codeblocks hidden by default
+  document.writeln( "<style type=\"text/css\">div.method-source-code { display: none }</style>" )
+  
+  // ]]>
+  </script>
+
+</head>
+<body>
+
+
+
+    <div id="classHeader">
+        <table class="header-table">
+        <tr class="top-aligned-row">
+          <td><strong>Class</strong></td>
+          <td class="class-name-in-header">ActiveConfig</td>
+        </tr>
+        <tr class="top-aligned-row">
+            <td><strong>In:</strong></td>
+            <td>
+                <a href="../files/lib/suffixes_rb.html">
+                lib/suffixes.rb
+                </a>
+        <br />
+                <a href="../files/lib/active_config_rb.html">
+                lib/active_config.rb
+                </a>
+        <br />
+                <a href="../files/lib/hash_config_rb.html">
+                lib/hash_config.rb
+                </a>
+        <br />
+            </td>
+        </tr>
+
+        <tr class="top-aligned-row">
+            <td><strong>Parent:</strong></td>
+            <td>
+                Object
+            </td>
+        </tr>
+        </table>
+    </div>
+  <!-- banner header -->
+
+  <div id="bodyContent">
+
+
+
+  <div id="contextContent">
+
+    <div id="description">
+      <pre>
+ See LICENSE.txt for details
+</pre>
+<h1><a href="ActiveConfig.html">ActiveConfig</a></h1>
+<pre>
+ * Provides dottable, hash, array, and argument access to YAML
+   configuration files
+ * Implements multilevel caching to reduce disk accesses
+ * Overlays multiple configuration files in an intelligent manner
+
+ Config file access example:
+  Given a configuration file named test.yaml and test_local.yaml
+  test.yaml:
+ ...
+ hash_1:
+   foo: &quot;foo&quot;
+   bar: &quot;bar&quot;
+   bok: &quot;bok&quot;
+ ...
+ test_local.yaml:
+ ...
+ hash_1:
+   foo: &quot;foo&quot;
+   bar: &quot;baz&quot;
+   zzz: &quot;zzz&quot;
+ ...
+
+  irb&gt; ActiveConfig.test
+  =&gt; {&quot;array_1&quot;=&gt;[&quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;d&quot;], &quot;perform_caching&quot;=&gt;true,
+  &quot;default&quot;=&gt;&quot;yo!&quot;, &quot;lazy&quot;=&gt;true, &quot;hash_1&quot;=&gt;{&quot;zzz&quot;=&gt;&quot;zzz&quot;, &quot;foo&quot;=&gt;&quot;foo&quot;,
+  &quot;bok&quot;=&gt;&quot;bok&quot;, &quot;bar&quot;=&gt;&quot;baz&quot;}, &quot;secure_login&quot;=&gt;true, &quot;test_mode&quot;=&gt;true}
+
+  --Notice that the hash produced is the result of merging the above
+  config files in a particular order
+
+  The overlay order of the config files is defined by ActiveConfig._get_file_suffixes:
+  * nil
+  * _local
+  * _config
+  * _local_config
+  * _{environment} (.i.e _development)
+  * _{environment}_local (.i.e _development_local)
+  * _{hostname} (.i.e _whiskey)
+  * _{hostname}_config_local (.i.e _whiskey_config_local)
+
+  ------------------------------------------------------------------
+  irb&gt; ActiveConfig.test_local
+  =&gt; {&quot;hash_1&quot;=&gt;{&quot;zzz&quot;=&gt;&quot;zzz&quot;, &quot;foo&quot;=&gt;&quot;foo&quot;, &quot;bar&quot;=&gt;&quot;baz&quot;}, &quot;test_mode&quot;=&gt;true}
+</pre>
+
+    </div>
+
+
+   </div>
+
+    <div id="method-list">
+      <h3 class="section-bar">Methods</h3>
+
+      <div class="name-list">
+      <a href="#M000029">[]</a>&nbsp;&nbsp;
+      <a href="#M000026">_check_config_changed</a>&nbsp;&nbsp;
+      <a href="#M000018">_config_file_loaded</a>&nbsp;&nbsp;
+      <a href="#M000017">_config_file_loaded=</a>&nbsp;&nbsp;
+      <a href="#M000021">_config_files</a>&nbsp;&nbsp;
+      <a href="#M000023">_config_hash</a>&nbsp;&nbsp;
+      <a href="#M000010">_config_path</a>&nbsp;&nbsp;
+      <a href="#M000011">_config_path_ary</a>&nbsp;&nbsp;
+      <a href="#M000025">_fire_on_load</a>&nbsp;&nbsp;
+      <a href="#M000013">_flush_cache</a>&nbsp;&nbsp;
+      <a href="#M000020">_get_config_files</a>&nbsp;&nbsp;
+      <a href="#M000012">_get_file_suffixes</a>&nbsp;&nbsp;
+      <a href="#M000028">_make_indifferent_and_freeze</a>&nbsp;&nbsp;
+      <a href="#M000027">_merge_hashes</a>&nbsp;&nbsp;
+      <a href="#M000015">_reload_delay=</a>&nbsp;&nbsp;
+      <a href="#M000014">_reload_disabled=</a>&nbsp;&nbsp;
+      <a href="#M000009">_root_file</a>&nbsp;&nbsp;
+      <a href="#M000007">_suffixes</a>&nbsp;&nbsp;
+      <a href="#M000016">_verbose=</a>&nbsp;&nbsp;
+      <a href="#M000022">config_changed?</a>&nbsp;&nbsp;
+      <a href="#M000032">disable_reload</a>&nbsp;&nbsp;
+      <a href="#M000035">filename_for_name</a>&nbsp;&nbsp;
+      <a href="#M000031">get_config_file</a>&nbsp;&nbsp;
+      <a href="#M000019">load_config_files</a>&nbsp;&nbsp;
+      <a href="#M000033">method_missing</a>&nbsp;&nbsp;
+      <a href="#M000008">new</a>&nbsp;&nbsp;
+      <a href="#M000024">on_load</a>&nbsp;&nbsp;
+      <a href="#M000034">reload</a>&nbsp;&nbsp;
+      <a href="#M000006">s_class</a>&nbsp;&nbsp;
+      <a href="#M000030">with_file</a>&nbsp;&nbsp;
+      </div>
+    </div>
+
+  </div>
+
+
+    <!-- if includes -->
+
+    <div id="section">
+
+    <div id="class-list">
+      <h3 class="section-bar">Classes and Modules</h3>
+
+      Class <a href="ActiveConfig/HashConfig.html" class="link">ActiveConfig::HashConfig</a><br />
+Class <a href="ActiveConfig/Suffixes.html" class="link">ActiveConfig::Suffixes</a><br />
+Class <a href="ActiveConfig/SuffixesWithOverlay.html" class="link">ActiveConfig::SuffixesWithOverlay</a><br />
+
+    </div>
+
+    <div id="constants-list">
+      <h3 class="section-bar">Constants</h3>
+
+      <div class="name-list">
+        <table summary="Constants">
+        <tr class="top-aligned-row context-row">
+          <td class="context-item-name">EMPTY_ARRAY</td>
+          <td>=</td>
+          <td class="context-item-value">[ ].freeze unless defined? EMPTY_ARRAY</td>
+        </tr>
+        </table>
+      </div>
+    </div>
+
+
+
+      
+
+
+    <!-- if method_list -->
+    <div id="methods">
+      <h3 class="section-bar">Public Class methods</h3>
+
+      <div id="method-M000008" class="method-detail">
+        <a name="M000008"></a>
+
+        <div class="method-heading">
+          <a href="ActiveConfig.src/M000008.html" target="Code" class="method-signature"
+            onclick="popupCode('ActiveConfig.src/M000008.html');return false;">
+          <span class="method-name">new</span><span class="method-args">(opts={})</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+          <p>
+Returns a list of directories to search for configuration files.
+</p>
+<p>
+Can be controlled via ENV[&#8216;ACTIVE_CONFIG_PATH&#8217;] Defaults to [
+CONFIG_ROOT ].
+</p>
+<p>
+Example:
+</p>
+<pre>
+  ACTIVE_CONFIG_PATH=&quot;$HOME/work/config:CONFIG_ROOT&quot; script/console
+</pre>
+        </div>
+      </div>
+
+      <div id="method-M000006" class="method-detail">
+        <a name="M000006"></a>
+
+        <div class="method-heading">
+          <a href="ActiveConfig.src/M000006.html" target="Code" class="method-signature"
+            onclick="popupCode('ActiveConfig.src/M000006.html');return false;">
+          <span class="method-name">s_class</span><span class="method-args">()</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+        </div>
+      </div>
+
+      <h3 class="section-bar">Public Instance methods</h3>
+
+      <div id="method-M000029" class="method-detail">
+        <a name="M000029"></a>
+
+        <div class="method-heading">
+          <a href="ActiveConfig.src/M000029.html" target="Code" class="method-signature"
+            onclick="popupCode('ActiveConfig.src/M000029.html');return false;">
+          <span class="method-name">[]</span><span class="method-args">(key, file=_root_file)</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+          <p>
+Gets a value from the global config file
+</p>
+        </div>
+      </div>
+
+      <div id="method-M000026" class="method-detail">
+        <a name="M000026"></a>
+
+        <div class="method-heading">
+          <a href="ActiveConfig.src/M000026.html" target="Code" class="method-signature"
+            onclick="popupCode('ActiveConfig.src/M000026.html');return false;">
+          <span class="method-name">_check_config_changed</span><span class="method-args">(iname=nil)</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+        </div>
+      </div>
+
+      <div id="method-M000018" class="method-detail">
+        <a name="M000018"></a>
+
+        <div class="method-heading">
+          <a href="ActiveConfig.src/M000018.html" target="Code" class="method-signature"
+            onclick="popupCode('ActiveConfig.src/M000018.html');return false;">
+          <span class="method-name">_config_file_loaded</span><span class="method-args">()</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+        </div>
+      </div>
+
+      <div id="method-M000017" class="method-detail">
+        <a name="M000017"></a>
+
+        <div class="method-heading">
+          <a href="ActiveConfig.src/M000017.html" target="Code" class="method-signature"
+            onclick="popupCode('ActiveConfig.src/M000017.html');return false;">
+          <span class="method-name">_config_file_loaded=</span><span class="method-args">(x)</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+        </div>
+      </div>
+
+      <div id="method-M000021" class="method-detail">
+        <a name="M000021"></a>
+
+        <div class="method-heading">
+          <a href="ActiveConfig.src/M000021.html" target="Code" class="method-signature"
+            onclick="popupCode('ActiveConfig.src/M000021.html');return false;">
+          <span class="method-name">_config_files</span><span class="method-args">(name)</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+          <p>
+Return the cached config file information for the given config name.
+</p>
+        </div>
+      </div>
+
+      <div id="method-M000023" class="method-detail">
+        <a name="M000023"></a>
+
+        <div class="method-heading">
+          <a href="ActiveConfig.src/M000023.html" target="Code" class="method-signature"
+            onclick="popupCode('ActiveConfig.src/M000023.html');return false;">
+          <span class="method-name">_config_hash</span><span class="method-args">(name)</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+          <p>
+Returns a cached indifferent access faker hash merged from all config files
+for a name.
+</p>
+        </div>
+      </div>
+
+      <div id="method-M000010" class="method-detail">
+        <a name="M000010"></a>
+
+        <div class="method-heading">
+          <a href="ActiveConfig.src/M000010.html" target="Code" class="method-signature"
+            onclick="popupCode('ActiveConfig.src/M000010.html');return false;">
+          <span class="method-name">_config_path</span><span class="method-args">()</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+        </div>
+      </div>
+
+      <div id="method-M000011" class="method-detail">
+        <a name="M000011"></a>
+
+        <div class="method-heading">
+          <a href="ActiveConfig.src/M000011.html" target="Code" class="method-signature"
+            onclick="popupCode('ActiveConfig.src/M000011.html');return false;">
+          <span class="method-name">_config_path_ary</span><span class="method-args">()</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+        </div>
+      </div>
+
+      <div id="method-M000025" class="method-detail">
+        <a name="M000025"></a>
+
+        <div class="method-heading">
+          <a href="ActiveConfig.src/M000025.html" target="Code" class="method-signature"
+            onclick="popupCode('ActiveConfig.src/M000025.html');return false;">
+          <span class="method-name">_fire_on_load</span><span class="method-args">(name)</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+          <p>
+Do <a href="ActiveConfig.html#M000034">reload</a> callbacks.
+</p>
+        </div>
+      </div>
+
+      <div id="method-M000013" class="method-detail">
+        <a name="M000013"></a>
+
+        <div class="method-heading">
+          <a href="ActiveConfig.src/M000013.html" target="Code" class="method-signature"
+            onclick="popupCode('ActiveConfig.src/M000013.html');return false;">
+          <span class="method-name">_flush_cache</span><span class="method-args">()</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+          <p>
+DON&#8216;T CALL THIS IN production.
+</p>
+        </div>
+      </div>
+
+      <div id="method-M000020" class="method-detail">
+        <a name="M000020"></a>
+
+        <div class="method-heading">
+          <a href="ActiveConfig.src/M000020.html" target="Code" class="method-signature"
+            onclick="popupCode('ActiveConfig.src/M000020.html');return false;">
+          <span class="method-name">_get_config_files</span><span class="method-args">(name)</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+          <p>
+Returns a list of all relavant config files as specified by <a
+href="ActiveConfig.html#M000012">_get_file_suffixes</a> list. Each element
+is an Array, containing:
+</p>
+<pre>
+  [ &quot;the-top-level-config-name&quot;,
+    &quot;the-suffixed-config-name&quot;,
+    &quot;/the/absolute/path/to/yaml.yml&quot;,
+    # The mtime of the yml file or nil, if it doesn't exist.
+  ]
+</pre>
+        </div>
+      </div>
+
+      <div id="method-M000012" class="method-detail">
+        <a name="M000012"></a>
+
+        <div class="method-heading">
+          <a href="ActiveConfig.src/M000012.html" target="Code" class="method-signature"
+            onclick="popupCode('ActiveConfig.src/M000012.html');return false;">
+          <span class="method-name">_get_file_suffixes</span><span class="method-args">(name)</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+          <p>
+Returns a list of suffixes to try for a given config name.
+</p>
+<p>
+This allows code to specifically ask for config overlays for a particular
+locale.
+</p>
+        </div>
+      </div>
+
+      <div id="method-M000028" class="method-detail">
+        <a name="M000028"></a>
+
+        <div class="method-heading">
+          <a href="ActiveConfig.src/M000028.html" target="Code" class="method-signature"
+            onclick="popupCode('ActiveConfig.src/M000028.html');return false;">
+          <span class="method-name">_make_indifferent_and_freeze</span><span class="method-args">(x)</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+          <p>
+Recursively makes hashes into frozen IndifferentAccess ConfigFakerHash
+Arrays are also traversed and frozen.
+</p>
+        </div>
+      </div>
+
+      <div id="method-M000027" class="method-detail">
+        <a name="M000027"></a>
+
+        <div class="method-heading">
+          <a href="ActiveConfig.src/M000027.html" target="Code" class="method-signature"
+            onclick="popupCode('ActiveConfig.src/M000027.html');return false;">
+          <span class="method-name">_merge_hashes</span><span class="method-args">(hashes)</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+          <p>
+Returns a merge of hashes.
+</p>
+        </div>
+      </div>
+
+      <div id="method-M000015" class="method-detail">
+        <a name="M000015"></a>
+
+        <div class="method-heading">
+          <a href="ActiveConfig.src/M000015.html" target="Code" class="method-signature"
+            onclick="popupCode('ActiveConfig.src/M000015.html');return false;">
+          <span class="method-name">_reload_delay=</span><span class="method-args">(x)</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+        </div>
+      </div>
+
+      <div id="method-M000014" class="method-detail">
+        <a name="M000014"></a>
+
+        <div class="method-heading">
+          <a href="ActiveConfig.src/M000014.html" target="Code" class="method-signature"
+            onclick="popupCode('ActiveConfig.src/M000014.html');return false;">
+          <span class="method-name">_reload_disabled=</span><span class="method-args">(x)</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+        </div>
+      </div>
+
+      <div id="method-M000009" class="method-detail">
+        <a name="M000009"></a>
+
+        <div class="method-heading">
+          <a href="ActiveConfig.src/M000009.html" target="Code" class="method-signature"
+            onclick="popupCode('ActiveConfig.src/M000009.html');return false;">
+          <span class="method-name">_root_file</span><span class="method-args">()</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+        </div>
+      </div>
+
+      <div id="method-M000007" class="method-detail">
+        <a name="M000007"></a>
+
+        <div class="method-heading">
+          <a href="ActiveConfig.src/M000007.html" target="Code" class="method-signature"
+            onclick="popupCode('ActiveConfig.src/M000007.html');return false;">
+          <span class="method-name">_suffixes</span><span class="method-args">()</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+          <p>
+There is a suffixes object which handles all the options and structure for
+suffixes
+</p>
+        </div>
+      </div>
+
+      <div id="method-M000016" class="method-detail">
+        <a name="M000016"></a>
+
+        <div class="method-heading">
+          <a href="ActiveConfig.src/M000016.html" target="Code" class="method-signature"
+            onclick="popupCode('ActiveConfig.src/M000016.html');return false;">
+          <span class="method-name">_verbose=</span><span class="method-args">(x)</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+        </div>
+      </div>
+
+      <div id="method-M000022" class="method-detail">
+        <a name="M000022"></a>
+
+        <div class="method-heading">
+          <a href="ActiveConfig.src/M000022.html" target="Code" class="method-signature"
+            onclick="popupCode('ActiveConfig.src/M000022.html');return false;">
+          <span class="method-name">config_changed?</span><span class="method-args">(name)</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+          <p>
+Returns whether or not the config for the given config name has changed
+since it was last loaded.
+</p>
+<p>
+Returns true if any files for config have changes since last load.
+</p>
+        </div>
+      </div>
+
+      <div id="method-M000032" class="method-detail">
+        <a name="M000032"></a>
+
+        <div class="method-heading">
+          <a href="ActiveConfig.src/M000032.html" target="Code" class="method-signature"
+            onclick="popupCode('ActiveConfig.src/M000032.html');return false;">
+          <span class="method-name">disable_reload</span><span class="method-args">() {|| ...}</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+          <p>
+Disables any reloading of config, executes &amp;block, calls
+check_config_changed, returns result of block
+</p>
+        </div>
+      </div>
+
+      <div id="method-M000031" class="method-detail">
+        <a name="M000031"></a>
+
+        <div class="method-heading">
+          <a href="ActiveConfig.src/M000031.html" target="Code" class="method-signature"
+            onclick="popupCode('ActiveConfig.src/M000031.html');return false;">
+          <span class="method-name">get_config_file</span><span class="method-args">(name)</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+          <p>
+Get the merged config hash. Will auto check every 5 minutes, for longer
+running apps.
+</p>
+        </div>
+      </div>
+
+      <div id="method-M000019" class="method-detail">
+        <a name="M000019"></a>
+
+        <div class="method-heading">
+          <a href="ActiveConfig.src/M000019.html" target="Code" class="method-signature"
+            onclick="popupCode('ActiveConfig.src/M000019.html');return false;">
+          <span class="method-name">load_config_files</span><span class="method-args">(name, force=false)</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+          <p>
+Get each config file&#8216;s yaml hash for the given config name, to be
+merged later. Files will only be loaded if they have not been loaded before
+or the files have changed within the last five minutes, or force is
+explicitly set to true.
+</p>
+<p>
+If file contains the comment:
+</p>
+<pre>
+  # ACTIVE_CONFIG:ERB
+</pre>
+<p>
+It will be run through ERb before YAML parsing with the following object
+bound:
+</p>
+<pre>
+  active_config.config_file =&gt; &lt;&lt;the name of the config.yml file&gt;&gt;
+  active_config.config_directory =&gt; &lt;&lt;the directory of the config.yml&gt;&gt;
+  active_config.config_name =&gt; &lt;&lt;the config name&gt;&gt;
+  active_config.config_files =&gt; &lt;&lt;Array of config files to be parsed&gt;&gt;
+</pre>
+        </div>
+      </div>
+
+      <div id="method-M000033" class="method-detail">
+        <a name="M000033"></a>
+
+        <div class="method-heading">
+          <a href="ActiveConfig.src/M000033.html" target="Code" class="method-signature"
+            onclick="popupCode('ActiveConfig.src/M000033.html');return false;">
+          <span class="method-name">method_missing</span><span class="method-args">(method, *args)</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+          <p>
+Short-hand access to config file by its name.
+</p>
+<p>
+Example:
+</p>
+<pre>
+  ActiveConfig.global(:foo) =&gt; ActiveConfig.with_file(:global).foo
+  ActiveConfig.global.foo   =&gt; ActiveConfig.with_file(:global).foo
+</pre>
+        </div>
+      </div>
+
+      <div id="method-M000024" class="method-detail">
+        <a name="M000024"></a>
+
+        <div class="method-heading">
+          <a href="ActiveConfig.src/M000024.html" target="Code" class="method-signature"
+            onclick="popupCode('ActiveConfig.src/M000024.html');return false;">
+          <span class="method-name">on_load</span><span class="method-args">(*args, &amp;blk)</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+          <p>
+Register a callback when a config has been reloaded.
+</p>
+<p>
+The config :ANY will register a callback for any config file change.
+</p>
+<p>
+Example:
+</p>
+<pre>
+  class MyClass
+    @@my_config = { }
+    ActiveConfig.on_load(:global) do
+      @@my_config = { }
+    end
+    def my_config
+      @@my_config ||= something_expensive_thing_on_config(ACTIVEConfig.global.foobar)
+    end
+  end
+</pre>
+        </div>
+      </div>
+
+      <div id="method-M000034" class="method-detail">
+        <a name="M000034"></a>
+
+        <div class="method-heading">
+          <a href="ActiveConfig.src/M000034.html" target="Code" class="method-signature"
+            onclick="popupCode('ActiveConfig.src/M000034.html');return false;">
+          <span class="method-name">reload</span><span class="method-args">(force = false)</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+          <p>
+If you are using this in production code, you fail.
+</p>
+        </div>
+      </div>
+
+      <div id="method-M000030" class="method-detail">
+        <a name="M000030"></a>
+
+        <div class="method-heading">
+          <a href="ActiveConfig.src/M000030.html" target="Code" class="method-signature"
+            onclick="popupCode('ActiveConfig.src/M000030.html');return false;">
+          <span class="method-name">with_file</span><span class="method-args">(name, *args)</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+        </div>
+      </div>
+
+      <h3 class="section-bar">Protected Instance methods</h3>
+
+      <div id="method-M000035" class="method-detail">
+        <a name="M000035"></a>
+
+        <div class="method-heading">
+          <a href="ActiveConfig.src/M000035.html" target="Code" class="method-signature"
+            onclick="popupCode('ActiveConfig.src/M000035.html');return false;">
+          <span class="method-name">filename_for_name</span><span class="method-args">(name, dir = _config_path_ary[0])</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+          <p>
+Get complete file name, including file path for the given config name and
+directory.
+</p>
+        </div>
+      </div>
+
+
+    </div>
+
+
+  </div>
+
+
+<div id="validator-badges">
+  <p><small><a href="http://validator.w3.org/check/referer">[Validate]</a></small></p>
+</div>
+
+</body>
+</html>

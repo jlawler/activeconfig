@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html>
+<head>
+  <title>_get_config_files (ActiveConfig)</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+  <link rel="stylesheet" href="../.././rdoc-style.css" type="text/css" media="screen" />
+</head>
+<body class="standalone-code">
+  <pre><span class="ruby-comment cmt"># File lib/active_config.rb, line 321</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">_get_config_files</span>(<span class="ruby-identifier">name</span>) 
+    <span class="ruby-identifier">files</span> = [ ]
+    <span class="ruby-comment cmt"># alexg: splatting *suffix allows us to deal with multipart suffixes </span>
+    <span class="ruby-comment cmt"># The order these get returned is the order of</span>
+    <span class="ruby-comment cmt"># priority of override.</span>
+    <span class="ruby-identifier">name_no_overlay</span>, <span class="ruby-identifier">suffixes</span> = <span class="ruby-identifier">_get_file_suffixes</span>(<span class="ruby-identifier">name</span>)
+    <span class="ruby-identifier">suffixes</span>.<span class="ruby-identifier">map</span> { <span class="ruby-operator">|</span> <span class="ruby-identifier">suffix</span> <span class="ruby-operator">|</span> [ <span class="ruby-identifier">name_no_overlay</span>, <span class="ruby-operator">*</span><span class="ruby-identifier">suffix</span> ].<span class="ruby-identifier">compact</span>.<span class="ruby-identifier">join</span>(<span class="ruby-value str">'_'</span>) }.<span class="ruby-identifier">each</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span> <span class="ruby-identifier">name_x</span> <span class="ruby-operator">|</span>
+      <span class="ruby-identifier">_config_path_ary</span>.<span class="ruby-identifier">reverse</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span> <span class="ruby-identifier">dir</span> <span class="ruby-operator">|</span>
+        <span class="ruby-identifier">filename</span> = <span class="ruby-identifier">filename_for_name</span>(<span class="ruby-identifier">name_x</span>, <span class="ruby-identifier">dir</span>)
+        <span class="ruby-identifier">files</span> <span class="ruby-operator">&lt;&lt;</span>
+        [ <span class="ruby-identifier">name</span>,
+          <span class="ruby-identifier">name_x</span>, 
+          <span class="ruby-identifier">filename</span>, 
+          <span class="ruby-constant">File</span>.<span class="ruby-identifier">exist?</span>(<span class="ruby-identifier">filename</span>) <span class="ruby-operator">?</span> <span class="ruby-constant">File</span>.<span class="ruby-identifier">stat</span>(<span class="ruby-identifier">filename</span>).<span class="ruby-identifier">mtime</span> <span class="ruby-operator">:</span> <span class="ruby-keyword kw">nil</span>, 
+        ]
+      <span class="ruby-keyword kw">end</span>
+    <span class="ruby-keyword kw">end</span>
+
+    <span class="ruby-identifier">files</span>
+  <span class="ruby-keyword kw">end</span></pre>
+</body>
+</html>

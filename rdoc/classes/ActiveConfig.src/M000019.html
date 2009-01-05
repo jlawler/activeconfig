@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html>
+<head>
+  <title>load_config_files (ActiveConfig)</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+  <link rel="stylesheet" href="../.././rdoc-style.css" type="text/css" media="screen" />
+</head>
+<body class="standalone-code">
+  <pre><span class="ruby-comment cmt"># File lib/active_config.rb, line 214</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">load_config_files</span>(<span class="ruby-identifier">name</span>, <span class="ruby-identifier">force</span>=<span class="ruby-keyword kw">false</span>)
+    <span class="ruby-identifier">name</span> = <span class="ruby-identifier">name</span>.<span class="ruby-identifier">to_s</span> <span class="ruby-comment cmt"># if name.is_a?(Symbol)</span>
+
+    <span class="ruby-comment cmt"># Return last config file hash list loaded,</span>
+    <span class="ruby-comment cmt"># if reload is disabled and files have already been loaded.</span>
+    <span class="ruby-keyword kw">return</span> <span class="ruby-ivar">@@cache_config_files</span>[<span class="ruby-identifier">name</span>] <span class="ruby-keyword kw">if</span> 
+      <span class="ruby-ivar">@@reload_disabled</span> <span class="ruby-operator">&amp;&amp;</span> 
+      <span class="ruby-ivar">@@cache_config_files</span>[<span class="ruby-identifier">name</span>]
+
+    <span class="ruby-identifier">now</span> = <span class="ruby-constant">Time</span>.<span class="ruby-identifier">now</span>
+
+    <span class="ruby-comment cmt"># Get array of all the existing files file the config name.</span>
+    <span class="ruby-identifier">config_files</span> = <span class="ruby-identifier">_get_config_files</span>(<span class="ruby-identifier">name</span>)
+    <span class="ruby-comment cmt"># STDERR.puts &quot;load_config_files(#{name.inspect})&quot;</span>
+    
+    <span class="ruby-comment cmt"># Get all the data from all yaml files into as hashes</span>
+    <span class="ruby-identifier">hashes</span> = <span class="ruby-identifier">config_files</span>.<span class="ruby-identifier">collect</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">f</span><span class="ruby-operator">|</span>
+      <span class="ruby-identifier">name</span>, <span class="ruby-identifier">name_x</span>, <span class="ruby-identifier">filename</span>, <span class="ruby-identifier">mtime</span> = <span class="ruby-operator">*</span><span class="ruby-identifier">f</span>
+
+      <span class="ruby-comment cmt"># Get the cached file info the specific file, if </span>
+      <span class="ruby-comment cmt"># it's been loaded before.</span>
+      <span class="ruby-identifier">val</span>, <span class="ruby-identifier">last_mtime</span>, <span class="ruby-identifier">last_loaded</span> = <span class="ruby-ivar">@@cache</span>[<span class="ruby-identifier">filename</span>] 
+
+      <span class="ruby-keyword kw">if</span> <span class="ruby-ivar">@@verbose</span>
+        <span class="ruby-constant">STDERR</span>.<span class="ruby-identifier">puts</span> <span class="ruby-node">&quot;f = #{f.inspect}&quot;</span>
+        <span class="ruby-constant">STDERR</span>.<span class="ruby-identifier">puts</span> <span class="ruby-node">&quot;cache #{name_x} filename = #{filename.inspect}&quot;</span>
+        <span class="ruby-constant">STDERR</span>.<span class="ruby-identifier">puts</span> <span class="ruby-node">&quot;cache #{name_x} val = #{val.inspect}&quot;</span>
+        <span class="ruby-constant">STDERR</span>.<span class="ruby-identifier">puts</span> <span class="ruby-node">&quot;cache #{name_x} last_mtime = #{last_mtime.inspect}&quot;</span>
+        <span class="ruby-constant">STDERR</span>.<span class="ruby-identifier">puts</span> <span class="ruby-node">&quot;cache #{name_x} last_loaded = #{last_loaded.inspect}&quot;</span>
+      <span class="ruby-keyword kw">end</span>
+
+      <span class="ruby-comment cmt"># Load the file if its never been loaded or its been more </span>
+      <span class="ruby-comment cmt"># than 5 minutes since last load attempt.</span>
+      <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">val</span> <span class="ruby-operator">==</span> <span class="ruby-keyword kw">nil</span> <span class="ruby-operator">||</span> 
+        <span class="ruby-identifier">now</span> <span class="ruby-operator">-</span> <span class="ruby-identifier">last_loaded</span> <span class="ruby-operator">&gt;</span> <span class="ruby-ivar">@@reload_delay</span>
+        <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">force</span> <span class="ruby-operator">||</span> 
+            <span class="ruby-identifier">val</span> <span class="ruby-operator">==</span> <span class="ruby-keyword kw">nil</span> <span class="ruby-operator">||</span> 
+            <span class="ruby-identifier">mtime</span> <span class="ruby-operator">!=</span> <span class="ruby-identifier">last_mtime</span>
+          
+          <span class="ruby-comment cmt"># mtime is nil if file does not exist.</span>
+          <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">mtime</span> 
+            <span class="ruby-keyword kw">begin</span>
+            <span class="ruby-constant">File</span>.<span class="ruby-identifier">open</span>( <span class="ruby-identifier">filename</span> ) <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span> <span class="ruby-identifier">yf</span> <span class="ruby-operator">|</span>
+              <span class="ruby-constant">STDERR</span>.<span class="ruby-identifier">puts</span> <span class="ruby-node">&quot;\nActiveConfig: loading #{filename.inspect}&quot;</span> <span class="ruby-keyword kw">if</span> <span class="ruby-ivar">@@verbose</span>
+              <span class="ruby-comment cmt"># Read raw file data.</span>
+              <span class="ruby-identifier">val</span> = <span class="ruby-identifier">yf</span>.<span class="ruby-identifier">read</span>
+
+              <span class="ruby-comment cmt"># If file has a # ACTIVE_CONFIG:ERB comment,</span>
+              <span class="ruby-comment cmt"># Process it as an ERb first.</span>
+              <span class="ruby-keyword kw">if</span> <span class="ruby-regexp re">/^\s*#\s*ACTIVE_CONFIG\s*:\s*ERB/i</span>.<span class="ruby-identifier">match</span>(<span class="ruby-identifier">val</span>)
+                <span class="ruby-comment cmt"># Prepare a object visible from ERb to</span>
+                <span class="ruby-comment cmt"># allow basic substitutions into YAMLs.</span>
+                <span class="ruby-identifier">active_config</span> = <span class="ruby-constant">HashWithIndifferentAccess</span>.<span class="ruby-identifier">new</span>({
+                  <span class="ruby-identifier">:config_file</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">filename</span>,
+                  <span class="ruby-identifier">:config_directory</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-constant">File</span>.<span class="ruby-identifier">dirname</span>(<span class="ruby-identifier">filename</span>),
+                  <span class="ruby-identifier">:config_name</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">name</span>,
+                  <span class="ruby-identifier">:config_files</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">config_files</span>,
+                })
+
+                <span class="ruby-identifier">val</span> = <span class="ruby-constant">ERB</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">val</span>).<span class="ruby-identifier">result</span>(<span class="ruby-identifier">binding</span>)
+              <span class="ruby-keyword kw">end</span>
+
+              <span class="ruby-comment cmt"># Read file data as YAML.</span>
+              <span class="ruby-identifier">val</span> = <span class="ruby-constant">YAML</span><span class="ruby-operator">::</span><span class="ruby-identifier">load</span>(<span class="ruby-identifier">val</span>)
+              <span class="ruby-comment cmt"># STDERR.puts &quot;ActiveConfig: loaded #{filename.inspect} =&gt; #{val.inspect}&quot;</span>
+              (<span class="ruby-ivar">@@config_file_loaded</span> <span class="ruby-operator">||=</span> { })[<span class="ruby-identifier">name</span>] = <span class="ruby-identifier">config_files</span>
+            <span class="ruby-keyword kw">end</span>
+            <span class="ruby-keyword kw">rescue</span> <span class="ruby-constant">Exception</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">err</span>
+              <span class="ruby-identifier">raise</span> <span class="ruby-constant">Exception</span>, <span class="ruby-node">&quot;while loading #{filename.inspect}: #{err.inspect}\n  #{err.backtrace.join(&quot;  \n&quot;)}&quot;</span>
+            <span class="ruby-keyword kw">end</span>
+          <span class="ruby-keyword kw">end</span>
+            
+          <span class="ruby-comment cmt"># Save cached config file contents, and mtime.</span>
+          <span class="ruby-ivar">@@cache</span>[<span class="ruby-identifier">filename</span>] = [ <span class="ruby-identifier">val</span>.<span class="ruby-identifier">nil?</span> <span class="ruby-value">? </span><span class="ruby-identifier">val</span> <span class="ruby-operator">:</span> <span class="ruby-identifier">val</span>.<span class="ruby-identifier">dup</span>, <span class="ruby-identifier">mtime</span>, <span class="ruby-identifier">now</span> ]
+          <span class="ruby-comment cmt"># STDERR.puts &quot;cache[#{filename.inspect}] = #{@@cache[filename].inspect}&quot; if @@verbose &amp;&amp; name_x == 'test'</span>
+
+          <span class="ruby-comment cmt"># Flush merged hash cache.</span>
+          <span class="ruby-ivar">@@cache_hash</span>[<span class="ruby-identifier">name</span>] = <span class="ruby-keyword kw">nil</span>
+                 
+          <span class="ruby-comment cmt"># Config files changed or disappeared.</span>
+          <span class="ruby-ivar">@@cache_files</span>[<span class="ruby-identifier">name</span>] = <span class="ruby-identifier">config_files</span>
+
+         <span class="ruby-keyword kw">end</span>
+      <span class="ruby-keyword kw">end</span>
+
+      <span class="ruby-identifier">val</span>
+    <span class="ruby-keyword kw">end</span>
+    <span class="ruby-identifier">hashes</span>.<span class="ruby-identifier">compact!</span>
+
+    <span class="ruby-comment cmt"># STDERR.puts &quot;load_config_files(#{name.inspect}) =&gt; #{hashes.inspect}&quot;</span>
+
+    <span class="ruby-comment cmt"># Keep last loaded config files around in case @@reload_dsabled.</span>
+    <span class="ruby-ivar">@@cache_config_files</span>[<span class="ruby-identifier">name</span>] = <span class="ruby-identifier">hashes</span>
+
+    <span class="ruby-identifier">hashes</span>
+  <span class="ruby-keyword kw">end</span></pre>
+</body>
+</html>
