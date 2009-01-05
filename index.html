@@ -1,1 +1,83 @@
-My GitHub Page
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="en-US">
+
+<head profile="http://gmpg.org/xfn/11">
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<title>jlawler.github.com</title>
+	<style type="text/css" media="screen">
+		@import url( http://jlawler.github.com/wp-content/themes/classic/style.css );
+	</style>
+
+</head>
+
+<body>
+<div id="rap">
+<h1 id="header"><a href="http://jlawler.github.com/">jlawler.github.com</a></h1>
+
+<div id="content">
+<!-- end header -->
+
+
+
+<h2>2008/12/29</h2>
+<div class="post hentry category-uncategorized tag-activeconfig" id="post-1">
+   <h3 class="storytitle"><a href="http://www.fixmetodo.com/?p=1" rel="bookmark">ActiveConfig</a></h3>
+  <ul>
+    <li><a href='git://github.com/jlawler/activeconfig.git'>git://github.com/jlawler/activeconfig.git</a></li>
+    <li><a href='http://www.github.com/jlawler/activeconfig'>Github Project Page</a></li>
+  </ul>
+  <div class="storycontent">
+
+    <p>ActiveConfig is a fork/rewrite of CnuConfig, a yaml based config management system written in ruby.  They philosphy for it is simple:  More things can change in your code than just RAILS_ENV.  Configuration parsing shouldn&#8217;t be difficult.  It should be something you use liberally.  Making a value configurable should be almost as easy as hardcoding a value.</p>
+<p>Historically, the way CnuConfig (and thus ActiveConfig) have been used is as a constant.  Create a constant for your app, for example MyConfig=ActiveConfig.new(:path =&gt; File.join(RAILS_ROOT,&#8221;etc&#8221;))</p>
+<p>ActiveConfig then reads all the Yaml files out of the etc directory of your Rails app, and makes them available in MyConfig as indifferent hashes.  For example, assuming you have a file called &#8220;mail.yml&#8221; containing</p>
+
+<pre>return-address: foo@bar.com
+zip:
+  work: 60606
+  home: 60605</pre>
+<p>Now you can access that via MyConfig.return-address, and MyConfig.zip.work.  Also, since MyConfig.zip is a hash, you can use all the normal hash methods on it.</p>
+<p>This is convenient, but this doesn&#8217;t demonstrate the power of ActiveConfig.  ActiveConfig allows you to define a set of &#8220;overrides&#8221; for configuration data.  For example:<br />
+servers.yml</p>
+<pre>mail: mail.fixmetodo.com
+db: malice.fixmetodo.com</pre>
+<p>servers_production.yml:</p>
+<pre>db: greed.fixmetodo.com</pre>
+
+<p>When ActiveConfig finds you are running in the &#8220;production&#8221; rails mode, it will load all the data from servers.yml, then it will overlay the data from servers_production.yml.<br />
+MyConfig.mail will always return mail.fixmetodo.com<br />
+MyConfig.db will return malice.fixmetodo.com UNLESS you are running in production.  Then it will use greed.fixmetodo.com</p>
+<p>ActiveConfig does a few other things, and is quite configurable, but I figured I at least wanted to start describing it here.  It is a power tool, and is hosted at github <a title="http://github.com/jlawler/activeconfig" href="http://github.com/jlawler/activeconfig">http://github.com/jlawler/activeconfig</a></p>
+  </div>
+</div>
+
+
+<!-- begin footer -->
+</div>
+
+<!-- begin sidebar -->
+<div id="menu">
+<ul>
+  <li>ActiveConfig Links:
+    <ul>
+    <li class="page_item page-item-2"><a href="rdoc/index.rhtml" title="Rdoc">Rdoc</a></li>
+    </ul>
+  </li>
+</ul>
+<ul>
+	<li class="pagenav">Pages:<ul>
+  <li class="page_item page-item-2"><a href="http://www.fixmetodo.com/" title="Blog">Blog</a></li>
+  <li class="page_item page-item-2"><a href="http://www.fixmetodo.com/?page_id=2" title="Philosophy">Philosophy</a></li>
+  </ul></li>
+</ul>
+
+
+</div>
+<!-- end sidebar -->
+
+<p class="credit"><!--16 queries. 0.220 seconds. --> <cite>Styles and HTML partially stolen from<a href='http://wordpress.org/' title='Powered by WordPress, state-of-the-art semantic personal publishing platform.'><strong>WordPress</strong></a> <br /> <small>(as it's running <a href='http://fixmetodo.com/'>fixmetodo.com</a>, my blog)</small></cite></p>
+
+</div>
+
+</body>
+</html>
