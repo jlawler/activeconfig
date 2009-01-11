@@ -1,4 +1,10 @@
 class ActiveConfig
+  class Cache
+    
+  end
+end
+
+class ActiveConfig
   class Suffixes
     attr_writer :priority
     attr :symbols
@@ -14,21 +20,22 @@ class ActiveConfig
       @symbols[:mode]=proc { |sym_table|return RAILS_ENV if defined?(RAILS_ENV)}
       @symbols[:overlay]=proc { |sym_table| ENV['ACTIVE_CONFIG_OVERLAY']}
       @priority=[
-      nil,
-      [:overlay, nil],
-      [:local],
-      [:overlay, [:local]],
-      :config,
-      [:overlay, :config],
-      :local_config,
-      [:overlay, :local_config],
-      :hostname,
-      [:overlay, :hostname],
-      [:hostname, :local_config],
-      [:overlay, [:hostname, :local_config]]
-    ]
+       nil,
+       [:overlay, nil],
+       [:local],
+       [:overlay, [:local]],
+       :config,
+       [:overlay, :config],
+       :local_config,
+       [:overlay, :local_config],
+       :hostname,
+       [:overlay, :hostname],
+       [:hostname, :local_config],
+       [:overlay, [:hostname, :local_config]]
+      ]
     end
     def method_missing method, val=nil 
+      super if method.to_s=~/^_/
       if method.to_s=~/^(.*)=$/
         return @symbols[$1]=val
       end      
@@ -38,6 +45,9 @@ class ActiveConfig
         return ret
       end
       super
+    end
+    def for file
+      suffixes.map { |this_suffix| [file,*this_suffix].compact.join('_')}.compact.uniq
     end
     def suffixes ary=@priority
       ary.map{|e|
@@ -56,8 +66,5 @@ class ActiveConfig
 "#{fname}#{m}.yml"
 }
     end
-  end
-  def self.s_class
-    Suffixes
   end
 end

@@ -64,11 +64,6 @@ require 'erb'
 class ActiveConfig
   EMPTY_ARRAY = [ ].freeze unless defined? EMPTY_ARRAY
 
-  #There is a suffixes object which handles all the options and structure
-  #for suffixes
-  def _suffixes
-    @_suffixes_obj||=Suffixes.new
-  end
 
   # Returns a list of directories to search for
   # configuration files.
@@ -79,29 +74,23 @@ class ActiveConfig
   # Example:
   #   ACTIVE_CONFIG_PATH="$HOME/work/config:CONFIG_ROOT" script/console
   #
+  def _suffixes
+    @suffixes_obj
+  end
   def initialize opts={}
-    @config_path=opts[:path] if opts[:path]
-    @root_file=opts[:root_file] if opts[:root_file]
+    @config_path=opts[:path] || ENV['ACTIVE_CONFIG_PATH']
+    @root_file=opts[:root_file] || 'global' 
     @suffixes = opts[:suffixes] if opts[:suffixes]
     @root_file = opts[:root_file] || 'global' 
-  end
-  def _root_file
-    @root_file ||= 'global'
+    @suffixes_obj = Suffixes.new
   end
   def _config_path
-    @config_path||= ENV['ACTIVE_CONFIG_PATH']
-  end
-  def _config_path_ary
     @config_path_ary ||=
       begin
-        path_sep = (_config_path =~ /;/) ? /;/ : /:/ # Make Wesha happy
-        path = _config_path.split(path_sep).reject{ | x | x.empty? }
-        path = 
-          path.collect! do | x | 
-            x.freeze
-          end
+        path_sep = (@config_path =~ /;/) ? /;/ : /:/ # Make Wesha happy
+        path = @config_path.split(path_sep).reject{ | x | x.empty? }
+        path.map!{|x| x.freeze }
         path.freeze
-        path
       end
   end
 
@@ -111,9 +100,6 @@ class ActiveConfig
   # This allows code to specifically ask for config overlays
   # for a particular locale.
   #
-  def _get_file_suffixes(name)
-    @@suffixes[name] ||= [name, _suffixes.suffixes]
-  end
 
 
   # Hash of suffixes for a given config name.
@@ -152,7 +138,6 @@ class ActiveConfig
 
   # DON'T CALL THIS IN production.
   def _flush_cache
-    @suffixes = nil
     @@suffixes = { }
     @@cache = { } 
     @@cache_files = { } 
@@ -284,7 +269,7 @@ class ActiveConfig
           end
             
           # Save cached config file contents, and mtime.
-          @@cache[filename] = [ val.nil? ? val : val.dup, mtime, now ]
+          @@cache[filename] = [  val, mtime, now ]
           # STDERR.puts "cache[#{filename.inspect}] = #{@@cache[filename].inspect}" if @@verbose && name_x == 'test'
 
           # Flush merged hash cache.
@@ -323,9 +308,8 @@ class ActiveConfig
     # alexg: splatting *suffix allows us to deal with multipart suffixes 
     # The order these get returned is the order of
     # priority of override.
-    name_no_overlay, suffixes = _get_file_suffixes(name)
-    suffixes.map { | suffix | [ name_no_overlay, *suffix ].compact.join('_') }.each do | name_x |
-      _config_path_ary.reverse.each do | dir |
+    _suffixes.for(name).each do | name_x |
+      _config_path.reverse.each do | dir |
         filename = filename_for_name(name_x, dir)
         files <<
         [ name,
@@ -554,10 +538,8 @@ class ActiveConfig
   #
   def method_missing(method, *args)
     if method.to_s=~/^_(.*)/
-#    $stderr.puts "AC MM #{method}"
-#      $stderr.puts method
       _flush_cache 
-      return _suffixes.send($1, *args)
+      return @suffixes.send($1, *args)
     else 
       value = with_file(method, *args)
       value
@@ -567,7 +549,6 @@ class ActiveConfig
   #If you are using this in production code, you fail.
   def reload(force = false)
     if force || ! @@reload_disabled
-      return unless ['development', 'integration'].include?(_mode)
       _flush_cache
     end
     nil
@@ -579,7 +560,7 @@ class ActiveConfig
   # Get complete file name, including file path for the given config name
   # and directory.
   #
-  def filename_for_name(name, dir = _config_path_ary[0])
+  def filename_for_name(name, dir = _config_path[0])
     File.join(dir, name.to_s + '.yml')
   end
 end

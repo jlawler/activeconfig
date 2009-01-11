@@ -62,7 +62,7 @@ class ActiveConfig::Test < Test::Unit::TestCase
 
 
   def test_mode
-    assert_equal RAILS_ENV, active_config._mode
+    assert_equal RAILS_ENV, active_config._suffixes.mode
   end
 
   def test_suffixes
@@ -351,7 +351,7 @@ class ActiveConfig::Test < Test::Unit::TestCase
 
 
   def test_overlay_by_name
-    assert_equal nil,   active_config._overlay
+    assert_equal nil,   active_config._suffixes.overlay
 
     assert_equal "foo", active_config.test.hash_1.foo
     assert_equal "foo", active_config.test_GB.hash_1.foo
@@ -397,7 +397,7 @@ class ActiveConfig::Test < Test::Unit::TestCase
       active_config._overlay = nil
 
     ensure
-      active_config._overlay = nil
+      active_config._suffixes.overlay = nil
     end
   end
 
