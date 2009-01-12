@@ -74,8 +74,7 @@ class ActiveConfig
       (opts.has_key?(:config_refresh) ? opts[:config_refresh].to_i : 300)
     @suffixes_obj = Suffixes.new
     @on_load = { }
-    @cache_hash = { }
-    @cache_files = { }
+    self._flush_cache
   end
   def _config_path
     @config_path_ary ||=
@@ -89,6 +88,10 @@ class ActiveConfig
   # DON'T CALL THIS IN production.
   def _flush_cache
     @cache_hash = { }
+    @hash_times = Hash.new(0)
+    @file_times = Hash.new(0)
+    @file_cache = { }
+
     self
   end
 
@@ -127,39 +130,43 @@ class ActiveConfig
     now = Time.now
 
     # Get array of all the existing files file the config name.
-    config_files = _get_config_files(name)
+    config_files = _config_files(name)
+    
     #$stderr.puts config_files.inspect
     # Get all the data from all yaml files into as hashes
     hashes = config_files.collect do |f|
       filename=f
       val=nil
+      mod_time=nil
       next unless File.exists?(filename)
+      next(@file_cache[filename]) unless (mod_time=File.stat(filename).mtime) != @file_times[filename]
       begin
-      File.open( filename ) do | yf |
-        # Read raw file data.
+      File.open( filename ) { | yf |
         val = yf.read
-
-        # If file has a # ACTIVE_CONFIG:ERB comment,
-        # Process it as an ERb first.
-        if /^\s*#\s*ACTIVE_CONFIG\s*:\s*ERB/i.match(val)
-          # Prepare a object visible from ERb to
-          # allow basic substitutions into YAMLs.
-          active_config = HashWithIndifferentAccess.new({
-            :config_file => filename,
-            :config_directory => File.dirname(filename),
-            :config_name => name,
-            :config_files => config_files,
-          })
-          val = ERB.new(val).result(binding)
-        end
-        # Read file data as YAML.
-        val = YAML::load(val)
-        # STDERR.puts "ActiveConfig: loaded #{filename.inspect} => #{val.inspect}"
-        (@config_file_loaded ||= { })[name] = config_files
-      end 
+      }
+      _fire_on_load(name)
+      # If file has a # ACTIVE_CONFIG:ERB comment,
+      # Process it as an ERb first.
+      if /^\s*#\s*ACTIVE_CONFIG\s*:\s*ERB/i.match(val)
+        # Prepare a object visible from ERb to
+        # allow basic substitutions into YAMLs.
+        active_config = HashWithIndifferentAccess.new({
+          :config_file => filename,
+          :config_directory => File.dirname(filename),
+          :config_name => name,
+          :config_files => config_files,
+        })
+        val = ERB.new(val).result(binding)
+      end
+      # Read file data as YAML.
+      val = YAML::load(val)
+      # STDERR.puts "ActiveConfig: loaded #{filename.inspect} => #{val.inspect}"
+      (@config_file_loaded ||= { })[name] = config_files
       rescue Exception => e
       end
-      val||{}
+      @file_cache[filename]=val
+      @file_times[filename]=mod_time
+      @file_cache[filename]
     end
     hashes.compact
   end
@@ -169,45 +176,33 @@ class ActiveConfig
     # STDERR.puts "get_config_file(#{name.inspect})"
     name = name.to_s # if name.is_a?(Symbol)
     now = Time.now
-#    if (! @last_auto_check[name]) || (now - @last_auto_check[name]) > @reload_delay
-#      @last_auto_check[name] = now
-      _check_config_changed(name)
-#    end
-    # result = 
-    _config_hash(name)
-    # STDERR.puts "get_config_file(#{name.inspect}) => #{result.inspect}"; result
+    return @cache_hash[name.to_sym] if 
+      (@hash_times[name.to_sym] - Time.now.to_i > @config_refresh) and
+      !@reload_disabled
+      
+    @cache_hash[name.to_sym]=begin
+      x = _config_hash(name)
+      @hash_times[name.to_sym]=Time.now.to_i
+      x
+    end
   end
 
   ## 
   # Returns a list of all relavant config files as specified
-  # by _get_file_suffixes list.
-  def _get_config_files(name) 
+  # by the suffixes object.
+  def _config_files(name) 
     _suffixes.for(name).inject([]) do | files,name_x |
       _config_path.reverse.inject(files) do |files, dir |
-        filename = File.join(dir, name_x.to_s + '.yml')
-        files << filename
+        files <<  File.join(dir, name_x.to_s + '.yml')
       end
     end
   end
 
-  def _config_files(name)
-    _get_config_files(name)
-  end
-
-  def config_changed?(name)
-    return false 
-    # STDERR.puts "config_changed?(#{name.inspect})"
-    name = name.to_s # if name.is_a?(Symbol)
-    ! (@cache_files[name] === _get_config_files(name))
-  end
-
   def _config_hash(name)
-    #$stderr.puts "FILE FOR #{name}"
-    #n$stderr.puts "RESULT #{load_config_files(name).inspect}"
     unless result = @cache_hash[name]
       result = @cache_hash[name] = 
-                     _make_indifferent_and_freeze(
-                                        load_config_files(name).inject({ }) { | n, h | n.weave(h, false) })
+        _make_indifferent_and_freeze(
+          load_config_files(name).inject({ }) { | n, h | n.weave(h, false) })
     end
     #$stderr.puts result.inspect
     result
@@ -267,7 +262,6 @@ class ActiveConfig
         @cache_hash[name] = nil
 
         # force on_load triggers.
-        _fire_on_load(name)
         name
       end
     end
@@ -281,26 +275,21 @@ class ActiveConfig
   # Arrays are also traversed and frozen.
   #
   def _make_indifferent_and_freeze(x)
+    return x if x.frozen?
     case x
     when HashConfig
-      unless x.frozen?
         x.each_pair do | k, v |
           x[k] = _make_indifferent_and_freeze(v)
         end
-      end
     when Hash
-      unless x.frozen?
-        x = HashConfig.new.merge!(x)
-        x.each_pair do | k, v |
-          x[k] = _make_indifferent_and_freeze(v)
-        end
+      x = HashConfig.new.merge!(x)
+      x.each_pair do | k, v |
+        x[k] = _make_indifferent_and_freeze(v)
       end
       # STDERR.puts "x = #{x.inspect}:#{x.class}"
     when Array
-      unless x.frozen?
-        x.collect!  do | v |
-          _make_indifferent_and_freeze(v)
-        end
+      x.collect!  do | v |
+        _make_indifferent_and_freeze(v)
       end
     end
     x.freeze

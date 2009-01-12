@@ -1,10 +1,4 @@
 class ActiveConfig
-  class Cache
-    
-  end
-end
-
-class ActiveConfig
   class Suffixes
     attr_writer :priority
     attr :symbols
