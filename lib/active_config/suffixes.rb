@@ -1,11 +1,14 @@
 class ActiveConfig
   class Suffixes
     attr_writer :priority
+    attr_writer :parent
     attr :symbols
     def overlay= new_overlay
+      @parent._flush_cache
       @symbols[:overlay]=(new_overlay.respond_to?(:upcase) ? new_overlay.upcase : new_overlay)
     end
     def initialize(*args)
+      @parent=args.shift
       @symbols=HashWithIndifferentAccess.new
       @symbols[:hostname]=proc {|sym_table| ENV['ACTIVE_CONFIG_HOSTNAME'] ||
        Socket.gethostname
@@ -31,6 +34,7 @@ class ActiveConfig
     def method_missing method, val=nil 
       super if method.to_s=~/^_/
       if method.to_s=~/^(.*)=$/
+        @parent._flush_cache
         return @symbols[$1]=val
       end      
       ret=@symbols[method]
