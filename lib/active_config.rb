@@ -63,17 +63,6 @@ require 'erb'
 
 class ActiveConfig
   EMPTY_ARRAY = [ ].freeze unless defined? EMPTY_ARRAY
-
-
-  # Returns a list of directories to search for
-  # configuration files.
-  # 
-  # Can be controlled via ENV['ACTIVE_CONFIG_PATH']
-  # Defaults to [ CONFIG_ROOT ].
-  #
-  # Example:
-  #   ACTIVE_CONFIG_PATH="$HOME/work/config:CONFIG_ROOT" script/console
-  #
   def _suffixes
     @suffixes_obj
   end
@@ -81,7 +70,8 @@ class ActiveConfig
     @config_path=opts[:path] || ENV['ACTIVE_CONFIG_PATH']
     @root_file=opts[:root_file] || 'global' 
     @suffixes = opts[:suffixes] if opts[:suffixes]
-    @root_file = opts[:root_file] || 'global' 
+    @config_refresh = 
+      (opts.has_key?(:config_refresh) ? opts[:config_refresh].to_i : 300)
     @suffixes_obj = Suffixes.new
   end
   def _config_path
@@ -89,52 +79,19 @@ class ActiveConfig
       begin
         path_sep = (@config_path =~ /;/) ? /;/ : /:/ # Make Wesha happy
         path = @config_path.split(path_sep).reject{ | x | x.empty? }
-        path.map!{|x| x.freeze }
-        path.freeze
+        path.map!{|x| x.freeze }.freeze
       end
   end
-
-
-  # Returns a list of suffixes to try for a given config name.
-  #
-  # This allows code to specifically ask for config overlays
-  # for a particular locale.
-  #
-
-
-  # Hash of suffixes for a given config name.
-  # @@suffixes['name'] vs @@suffix['name_GB']
   @@suffixes = { }
-
-  # Hash of yaml file names and their respective contents,  
-  # last modified time, and the last time it was loaded.
-  # @@cache[filename] = [yaml_contents, mod_time, time_loaded]
   @@cache = {}
-
-  # Hash of config file base names and their existing filenames
-  # including the suffixes.  
-  # @@cache_files['global'] = ['global.yml', 'global_local.yml', 'global_whiskey.yml']
   @@cache_files = {}
-
-  # Hash of config base name and the contents of all its respective 
-  # files merged into hashes. This hash holds the data that is 
-  # accessed when ActiveConfig is called. This gets re-created each time
-  # the config files are loaded.
-  # @@cache_hash['global'] = config_hash
   @@cache_hash = { }
-
-  # The hash holds the same info as @@cache_hash, but it is only
-  # loaded once. If reload is disabled, data will from this hash 
-  # will always be passed back when ActiveConfig is called.
   @@cache_config_files = { } # Keep around incase reload_disabled.
-
-  # Hash of config base name and the last time it was checked for
-  # update.
-  # @@last_auto_check['global'] = Time.now
   @@last_auto_check = { }
-
-  # Hash of callbacks Procs for when a particular config file has changed.
   @@on_load = { }
+  @@reload_disabled = false
+  @@reload_delay = 300
+  @@verbose = false
 
   # DON'T CALL THIS IN production.
   def _flush_cache
@@ -146,36 +103,16 @@ class ActiveConfig
     self
   end
 
-  # Flag indicating whether or not reload should be executed.
-  @@reload_disabled = false
   def _reload_disabled=(x)
     @@reload_disabled = x.nil? ? false : x
   end
 
-  # The number of seconds between reloading of config files
-  # and automatic reload checks.
-  @@reload_delay = 300
   def _reload_delay=(x)
     @@reload_delay = x || 300
   end
 
-  # Flag indicating whether or not to log errors that occur 
-  # in the process of handling config files.
-  @@verbose = false
   def _verbose=(x)
     @@verbose = x.nil? ? false : x;
-  end
-
-  # Helper methods for white-box testing and debugging.
-  
-  # A hash of each file that has been loaded.
-  # Can be used for white-box testing or debugging.
-  @@config_file_loaded = nil
-  def _config_file_loaded=(x)
-    @@config_file_loaded = x
-  end
-  def _config_file_loaded
-    @@config_file_loaded
   end
 
   ##
@@ -285,12 +222,21 @@ class ActiveConfig
     end
     hashes.compact!
 
-    # STDERR.puts "load_config_files(#{name.inspect}) => #{hashes.inspect}"
-
-    # Keep last loaded config files around in case @@reload_dsabled.
     @@cache_config_files[name] = hashes
 
     hashes
+  end
+  def get_config_file(name)
+    # STDERR.puts "get_config_file(#{name.inspect})"
+    name = name.to_s # if name.is_a?(Symbol)
+    now = Time.now
+    if (! @@last_auto_check[name]) || (now - @@last_auto_check[name]) > @@reload_delay
+      @@last_auto_check[name] = now
+      _check_config_changed(name)
+    end
+    # result = 
+    _config_hash(name)
+    # STDERR.puts "get_config_file(#{name.inspect}) => #{result.inspect}"; result
   end
 
 
@@ -307,10 +253,9 @@ class ActiveConfig
     files = [ ]
     # alexg: splatting *suffix allows us to deal with multipart suffixes 
     # The order these get returned is the order of
-    # priority of override.
     _suffixes.for(name).each do | name_x |
       _config_path.reverse.each do | dir |
-        filename = filename_for_name(name_x, dir)
+        filename = File.join(dir, name_x.to_s + '.yml')
         files <<
         [ name,
           name_x, 
@@ -323,42 +268,23 @@ class ActiveConfig
     files
   end
 
-  ##
-  # Return the cached config file information for the given config name.
   def _config_files(name)
     @@cache_files[name] ||= _get_config_files(name)
   end
 
-  ##
-  # Returns whether or not the config for the given config name has changed 
-  # since it was last loaded.
-  #
-  # Returns true if any files for config have changes since
-  # last load.
   def config_changed?(name)
     # STDERR.puts "config_changed?(#{name.inspect})"
     name = name.to_s # if name.is_a?(Symbol)
     ! (@@cache_files[name] === _get_config_files(name))
   end
 
-
-  ## 
-  # Returns a cached indifferent access faker hash merged
-  # from all config files for a name.
-  #
   def _config_hash(name)
-#    $stderr.puts load_config_files(name).inspect
-    # STDERR.puts "_config_hash(#{name.inspect})"; result = 
     unless result = @@cache_hash[name]
       result = @@cache_hash[name] = 
                      _make_indifferent_and_freeze(
-                          _merge_hashes(
-                                        load_config_files(name)))
-
+                                        load_config_files(name).inject({ }) { | n, h | n.weave(h, false) })
       STDERR.puts "_config_hash(#{name.inspect}): reloaded" if @@verbose
-      
     end
-
     result
   end
 
@@ -394,7 +320,6 @@ class ActiveConfig
     end
   end
 
-
   # Do reload callbacks.
   def _fire_on_load(name)
     callbacks = 
@@ -406,8 +331,6 @@ class ActiveConfig
       cb.call()
     end
   end
-
-
 
   def _check_config_changed(iname=nil)
     iname=iname.nil? ?  @@cache_hash.keys.dup : [*iname]
@@ -427,15 +350,6 @@ class ActiveConfig
     return nil if ret.empty?
     ret
   end
-
-
-  ##
-  # Returns a merge of hashes.
-  #
-  def _merge_hashes(hashes)
-    hashes.inject({ }) { | n, h | n.weave(h, false) }
-  end
-
 
   ## 
   # Recursively makes hashes into frozen IndifferentAccess ConfigFakerHash
@@ -459,7 +373,7 @@ class ActiveConfig
       # STDERR.puts "x = #{x.inspect}:#{x.class}"
     when Array
       unless x.frozen?
-        x.collect! do | v |
+        x.collect!  do | v |
           _make_indifferent_and_freeze(v)
         end
       end
@@ -467,12 +381,6 @@ class ActiveConfig
     x.freeze
   end
 
-  ##
-  # Gets a value from the global config file
-  #
-  def [](key, file=_root_file)
-    get_config_file(file)[key]
-  end
 
   def with_file(name, *args)
     # STDERR.puts "with_file(#{name.inspect}, #{args.inspect})"; result = 
@@ -489,22 +397,13 @@ class ActiveConfig
     }
     # STDERR.puts "with_file(#{name.inspect}, #{args.inspect}) => #{result.inspect}"; result
   end
-  
-  ##
-  # Get the merged config hash.
-  # Will auto check every 5 minutes, for longer running apps.
-  #
-  def get_config_file(name)
-    # STDERR.puts "get_config_file(#{name.inspect})"
-    name = name.to_s # if name.is_a?(Symbol)
-    now = Time.now
-    if (! @@last_auto_check[name]) || (now - @@last_auto_check[name]) > @@reload_delay
-      @@last_auto_check[name] = now
-      _check_config_changed(name)
+ 
+  #If you are using this in production code, you fail.
+  def reload(force = false)
+    if force || ! @@reload_disabled
+      _flush_cache
     end
-    # result = 
-    _config_hash(name)
-    # STDERR.puts "get_config_file(#{name.inspect}) => #{result.inspect}"; result
+    nil
   end
 
   ## 
@@ -529,6 +428,13 @@ class ActiveConfig
   end
 
   ##
+  # Gets a value from the global config file
+  #
+  def [](key, file=_root_file)
+    get_config_file(file)[key]
+  end
+
+  ##
   # Short-hand access to config file by its name.
   #
   # Example:
@@ -544,24 +450,6 @@ class ActiveConfig
       value = with_file(method, *args)
       value
     end
-  end
-
-  #If you are using this in production code, you fail.
-  def reload(force = false)
-    if force || ! @@reload_disabled
-      _flush_cache
-    end
-    nil
-  end
-                    
-  protected
-
-  ##
-  # Get complete file name, including file path for the given config name
-  # and directory.
-  #
-  def filename_for_name(name, dir = _config_path[0])
-    File.join(dir, name.to_s + '.yml')
   end
 end
 
