@@ -33,20 +33,4 @@ task :cnu_config_test do
   end
 end
 
-spec = Gem::Specification.new do |s|
-s.name = 'active_config'
-s.version = '0.1.'+Time.now.strftime('%Y%m%d%H%M%S')
-s.author = 'Jeremy Lawler'
-s.email = 'jlawler@cashnetusa.com'
-s.homepage = 'http://localhost'
-s.platform = Gem::Platform::RUBY
-s.summary = 'An extremely flexible configuration system'
-s.files = FileList["{bin,docs,lib,test}/**/*"].exclude('rdoc').to_a
-s.require_path      = 'lib'
-s.autorequire = 'active_config'
-end
-
-Rake::GemPackageTask.new(spec) do |pkg|
-    pkg.need_tar = true
-end
 
