@@ -75,7 +75,7 @@ class ActiveConfig
     @suffixes_obj = Suffixes.new
     @on_load = { }
     @cache_hash = { }
-    @cache_files = []
+    @cache_files = { }
   end
   def _config_path
     @config_path_ary ||=
@@ -152,11 +152,10 @@ class ActiveConfig
           })
           val = ERB.new(val).result(binding)
         end
-
         # Read file data as YAML.
         val = YAML::load(val)
         # STDERR.puts "ActiveConfig: loaded #{filename.inspect} => #{val.inspect}"
-        (@@config_file_loaded ||= { })[name] = config_files
+        (@config_file_loaded ||= { })[name] = config_files
       end 
       rescue Exception => e
       end
@@ -170,8 +169,8 @@ class ActiveConfig
     # STDERR.puts "get_config_file(#{name.inspect})"
     name = name.to_s # if name.is_a?(Symbol)
     now = Time.now
-#    if (! @@last_auto_check[name]) || (now - @@last_auto_check[name]) > @@reload_delay
-#      @@last_auto_check[name] = now
+#    if (! @last_auto_check[name]) || (now - @last_auto_check[name]) > @reload_delay
+#      @last_auto_check[name] = now
       _check_config_changed(name)
 #    end
     # result = 
@@ -223,12 +222,12 @@ class ActiveConfig
   # Example:
   #
   #   class MyClass 
-  #     @@my_config = { }
+  #     @my_config = { }
   #     ActiveConfig.on_load(:global) do 
-  #       @@my_config = { } 
+  #       @my_config = { } 
   #     end
   #     def my_config
-  #       @@my_config ||= something_expensive_thing_on_config(ACTIVEConfig.global.foobar)
+  #       @my_config ||= something_expensive_thing_on_config(ACTIVEConfig.global.foobar)
   #     end
   #   end
   #
@@ -242,15 +241,15 @@ class ActiveConfig
     # Register callback proc.
     args.each do | name |
       name = name.to_s
-      (@@on_load[name] ||= [ ]) << proc
+      (@on_load[name] ||= [ ]) << proc
     end
   end
 
   # Do reload callbacks.
   def _fire_on_load(name)
     callbacks = 
-      (@@on_load['ANY'] || EMPTY_ARRAY) + 
-      (@@on_load[name] || EMPTY_ARRAY)
+      (@on_load['ANY'] || EMPTY_ARRAY) + 
+      (@on_load[name] || EMPTY_ARRAY)
     callbacks.uniq!
     STDERR.puts "_fire_on_load(#{name.inspect}): callbacks = #{callbacks.inspect}" if @verbose && ! callbacks.empty?
     callbacks.each do | cb |
