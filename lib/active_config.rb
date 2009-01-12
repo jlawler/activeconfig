@@ -1,13 +1,13 @@
 require 'socket'
 require 'yaml'
-require 'hash_weave' # Hash#weave
+require 'active_config/hash_weave' # Hash#weave
 # REMOVE DEPENDENCY ON active_support.
 require 'rubygems'
 require 'active_support'
 require 'active_support/core_ext'
 require 'active_support/core_ext/hash/indifferent_access'
-require 'hash_config'
-require 'suffixes'
+require 'active_config/hash_config'
+require 'active_config/suffixes'
 require 'erb'
 
 
