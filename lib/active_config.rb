@@ -176,13 +176,16 @@ class ActiveConfig
     # STDERR.puts "get_config_file(#{name.inspect})"
     name = name.to_s # if name.is_a?(Symbol)
     now = Time.now
+#    $stderr.puts (!!@reload_disabled).inspect
+#    $stderr.puts (@hash_times[name.to_sym]).inspect
+#$stderr.puts ( now.to_i - @hash_times[name.to_sym] > @config_refresh).inspect
     return @cache_hash[name.to_sym] if 
-      (@hash_times[name.to_sym] - Time.now.to_i > @config_refresh) and
+      (now.to_i - @hash_times[name.to_sym]  < @config_refresh) and
       !@reload_disabled
-      
+ #   $stderr.puts "NOT USING CACHED"  
     @cache_hash[name.to_sym]=begin
       x = _config_hash(name)
-      @hash_times[name.to_sym]=Time.now.to_i
+      @hash_times[name.to_sym]=now.to_i
       x
     end
   end
