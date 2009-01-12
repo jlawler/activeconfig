@@ -66,13 +66,25 @@ class ActiveConfig
   def _suffixes
     @suffixes_obj
   end
+  # ActiveConfig.new take options from a hash (or hash like) object.
+  # Valid keys are:
+  #   :path           :  Where it can find the config files, defaults to ENV['ACTIVE_CONFIG_PATH'], or RAILS_ROOT/etc
+  #   :root_file      :  Defines the file that holds "top level" configs. (ie active_config.key).  Defaults to "global"
+  #   :suffixes       :  Either a suffixes object, or an array of suffixes symbols with their priority.  See the ActiveConfig::Suffixes object
+  #   :config_refresh :  How often we should check for update config files
+  #
+  #                 
+  #FIXME TODO
   def initialize opts={}
-    @config_path=opts[:path] || ENV['ACTIVE_CONFIG_PATH']
+    @config_path=opts[:path] || ENV['ACTIVE_CONFIG_PATH'] || (defined?(RAILS_ROOT) ? File.join(RAILS_ROOT,'etc') : nil)
     @root_file=opts[:root_file] || 'global' 
-    @suffixes = opts[:suffixes] if opts[:suffixes]
+    if ActiveConfig::Suffixes===opts[:suffixes]
+      @suffixes_obj = opts[:suffixes] 
+      @suffixes_obj.parent=self
+    end
     @config_refresh = 
       (opts.has_key?(:config_refresh) ? opts[:config_refresh].to_i : 300)
-    @suffixes_obj = Suffixes.new
+    @suffixes_obj ||= Suffixes.new self, opts[:suffixes]
     @on_load = { }
     self._flush_cache
   end
@@ -86,12 +98,15 @@ class ActiveConfig
   end
 
   # DON'T CALL THIS IN production.
-  def _flush_cache
-    @cache_hash = { }
-    @hash_times = Hash.new(0)
-    @file_times = Hash.new(0)
-    @file_cache = { }
-
+  def _flush_cache *types
+    if types.size == 0 or types.include? :hash
+      @cache_hash = { }
+      @hash_times = Hash.new(0)
+    end
+    if types.size == 0 or types.include? :file
+      @file_times = Hash.new(0)
+      @file_cache = { }
+    end
     self
   end
 
@@ -125,7 +140,7 @@ class ActiveConfig
   #   active_config.config_name => <<the config name>>
   #   active_config.config_files => <<Array of config files to be parsed>>
   #
-  def load_config_files(name, force=false)
+  def _load_config_files(name, force=false)
     name = name.to_s
     now = Time.now
 
@@ -134,6 +149,7 @@ class ActiveConfig
     
     #$stderr.puts config_files.inspect
     # Get all the data from all yaml files into as hashes
+    _fire_on_load(name)
     hashes = config_files.collect do |f|
       filename=f
       val=nil
@@ -144,7 +160,6 @@ class ActiveConfig
       File.open( filename ) { | yf |
         val = yf.read
       }
-      _fire_on_load(name)
       # If file has a # ACTIVE_CONFIG:ERB comment,
       # Process it as an ERb first.
       if /^\s*#\s*ACTIVE_CONFIG\s*:\s*ERB/i.match(val)
@@ -179,10 +194,12 @@ class ActiveConfig
 #    $stderr.puts (!!@reload_disabled).inspect
 #    $stderr.puts (@hash_times[name.to_sym]).inspect
 #$stderr.puts ( now.to_i - @hash_times[name.to_sym] > @config_refresh).inspect
+    #return cached if cached is still good
     return @cache_hash[name.to_sym] if 
-      (now.to_i - @hash_times[name.to_sym]  < @config_refresh) and
-      !@reload_disabled
- #   $stderr.puts "NOT USING CACHED"  
+      (now.to_i - @hash_times[name.to_sym]  < @config_refresh) 
+    #return cached if we have something cached and no reload_disabled flag
+    return @cache_hash[name.to_sym] if @cache_hash[name.to_sym] and @reload_disabled
+#    $stderr.puts "NOT USING CACHED AND RELOAD DISABLED" if @reload_disabled
     @cache_hash[name.to_sym]=begin
       x = _config_hash(name)
       @hash_times[name.to_sym]=now.to_i
@@ -205,7 +222,7 @@ class ActiveConfig
     unless result = @cache_hash[name]
       result = @cache_hash[name] = 
         _make_indifferent_and_freeze(
-          load_config_files(name).inject({ }) { | n, h | n.weave(h, false) })
+          _load_config_files(name).inject({ }) { | n, h | n.weave(h, false) })
     end
     #$stderr.puts result.inspect
     result
