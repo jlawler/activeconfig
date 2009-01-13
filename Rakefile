@@ -5,6 +5,10 @@ require 'rake/gempackagetask'
 task :default => :test
 active_config_multi_paths=[File.expand_path(File.dirname(__FILE__) + "/test/active_config_test_multi/patha"),':',File.expand_path(File.dirname(__FILE__) + "/test/active_config_test_multi/pathb")]
 
+task :rdoc do
+  sh "rm -rf #{File.dirname(__FILE__)}/doc"
+  sh "cd lib && rdoc -o ../doc " 
+end
 task :test do
   sh "ruby -I lib test/active_config_test.rb"
   puts "\n\n"
