@@ -5,14 +5,24 @@
 
 <html>
 <head>
-  <title>_suffixes (ActiveConfig)</title>
+  <title>new (ActiveConfig)</title>
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
   <link rel="stylesheet" href="../.././rdoc-style.css" type="text/css" media="screen" />
 </head>
 <body class="standalone-code">
-  <pre><span class="ruby-comment cmt"># File lib/active_config.rb, line 69</span>
-  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">_suffixes</span>
-    <span class="ruby-ivar">@_suffixes_obj</span><span class="ruby-operator">||=</span><span class="ruby-constant">Suffixes</span>.<span class="ruby-identifier">new</span>
+  <pre><span class="ruby-comment cmt"># File active_config.rb, line 78</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">initialize</span> <span class="ruby-identifier">opts</span>={}
+    <span class="ruby-ivar">@config_path</span>=<span class="ruby-identifier">opts</span>[<span class="ruby-identifier">:path</span>] <span class="ruby-operator">||</span> <span class="ruby-constant">ENV</span>[<span class="ruby-value str">'ACTIVE_CONFIG_PATH'</span>] <span class="ruby-operator">||</span> (<span class="ruby-keyword kw">defined?</span>(<span class="ruby-constant">RAILS_ROOT</span>) <span class="ruby-operator">?</span> <span class="ruby-constant">File</span>.<span class="ruby-identifier">join</span>(<span class="ruby-constant">RAILS_ROOT</span>,<span class="ruby-value str">'etc'</span>) <span class="ruby-operator">:</span> <span class="ruby-keyword kw">nil</span>)
+    <span class="ruby-ivar">@root_file</span>=<span class="ruby-identifier">opts</span>[<span class="ruby-identifier">:root_file</span>] <span class="ruby-operator">||</span> <span class="ruby-value str">'global'</span> 
+    <span class="ruby-keyword kw">if</span> <span class="ruby-constant">ActiveConfig</span><span class="ruby-operator">::</span><span class="ruby-constant">Suffixes</span><span class="ruby-operator">===</span><span class="ruby-identifier">opts</span>[<span class="ruby-identifier">:suffixes</span>]
+      <span class="ruby-ivar">@suffixes_obj</span> = <span class="ruby-identifier">opts</span>[<span class="ruby-identifier">:suffixes</span>] 
+      <span class="ruby-ivar">@suffixes_obj</span>.<span class="ruby-identifier">parent</span>=<span class="ruby-keyword kw">self</span>
+    <span class="ruby-keyword kw">end</span>
+    <span class="ruby-ivar">@config_refresh</span> = 
+      (<span class="ruby-identifier">opts</span>.<span class="ruby-identifier">has_key?</span>(<span class="ruby-identifier">:config_refresh</span>) <span class="ruby-operator">?</span> <span class="ruby-identifier">opts</span>[<span class="ruby-identifier">:config_refresh</span>].<span class="ruby-identifier">to_i</span> <span class="ruby-operator">:</span> <span class="ruby-value">300</span>)
+    <span class="ruby-ivar">@suffixes_obj</span> <span class="ruby-operator">||=</span> <span class="ruby-constant">Suffixes</span>.<span class="ruby-identifier">new</span> <span class="ruby-keyword kw">self</span>, <span class="ruby-identifier">opts</span>[<span class="ruby-identifier">:suffixes</span>]
+    <span class="ruby-ivar">@on_load</span> = { }
+    <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">_flush_cache</span>
   <span class="ruby-keyword kw">end</span></pre>
 </body>
 </html>

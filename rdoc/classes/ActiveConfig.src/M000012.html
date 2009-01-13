@@ -5,14 +5,14 @@
 
 <html>
 <head>
-  <title>_get_file_suffixes (ActiveConfig)</title>
+  <title>_verbose= (ActiveConfig)</title>
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
   <link rel="stylesheet" href="../.././rdoc-style.css" type="text/css" media="screen" />
 </head>
 <body class="standalone-code">
-  <pre><span class="ruby-comment cmt"># File lib/active_config.rb, line 114</span>
-  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">_get_file_suffixes</span>(<span class="ruby-identifier">name</span>)
-    <span class="ruby-ivar">@@suffixes</span>[<span class="ruby-identifier">name</span>] <span class="ruby-operator">||=</span> [<span class="ruby-identifier">name</span>, <span class="ruby-identifier">_suffixes</span>.<span class="ruby-identifier">suffixes</span>]
+  <pre><span class="ruby-comment cmt"># File active_config.rb, line 121</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">_verbose=</span>(<span class="ruby-identifier">x</span>)
+    <span class="ruby-ivar">@verbose</span> = <span class="ruby-identifier">x</span>.<span class="ruby-identifier">nil?</span> <span class="ruby-value">? </span><span class="ruby-keyword kw">false</span> <span class="ruby-operator">:</span> <span class="ruby-identifier">x</span>;
   <span class="ruby-keyword kw">end</span></pre>
 </body>
 </html>

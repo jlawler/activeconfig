@@ -5,19 +5,14 @@
 
 <html>
 <head>
-  <title>new (ActiveConfig::Suffixes)</title>
+  <title>new (ActiveConfig::SuffixesWithOverlay)</title>
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
   <link rel="stylesheet" href="../../.././rdoc-style.css" type="text/css" media="screen" />
 </head>
 <body class="standalone-code">
-  <pre><span class="ruby-comment cmt"># File lib/suffixes.rb, line 8</span>
+  <pre><span class="ruby-comment cmt"># File cnu_config.rb, line 8</span>
     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">args</span>)
-      <span class="ruby-ivar">@symbols</span>=<span class="ruby-constant">HashWithIndifferentAccess</span>.<span class="ruby-identifier">new</span>
-      <span class="ruby-ivar">@symbols</span>[<span class="ruby-identifier">:hostname</span>]=<span class="ruby-identifier">proc</span> {<span class="ruby-operator">|</span><span class="ruby-identifier">sym_table</span><span class="ruby-operator">|</span> <span class="ruby-constant">ENV</span>[<span class="ruby-value str">'ACTIVE_CONFIG_HOSTNAME'</span>] <span class="ruby-operator">||</span>
-       <span class="ruby-constant">Socket</span>.<span class="ruby-identifier">gethostname</span>
-      } 
-      <span class="ruby-ivar">@symbols</span>[<span class="ruby-identifier">:hostname_short</span>]=<span class="ruby-identifier">proc</span> {<span class="ruby-operator">|</span><span class="ruby-identifier">sym_table</span><span class="ruby-operator">|</span> <span class="ruby-identifier">sym_table</span>[<span class="ruby-identifier">:hostname</span>].<span class="ruby-identifier">call</span>.<span class="ruby-identifier">sub</span>(<span class="ruby-regexp re">/\..*$/</span>, <span class="ruby-value str">''</span>).<span class="ruby-identifier">freeze</span>}
-      <span class="ruby-ivar">@symbols</span>[<span class="ruby-identifier">:mode</span>]=<span class="ruby-identifier">proc</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">sym_table</span><span class="ruby-operator">|</span><span class="ruby-keyword kw">return</span> <span class="ruby-constant">RAILS_ENV</span> <span class="ruby-keyword kw">if</span> <span class="ruby-keyword kw">defined?</span>(<span class="ruby-constant">RAILS_ENV</span>)}
+      <span class="ruby-keyword kw">super</span>
       <span class="ruby-ivar">@symbols</span>[<span class="ruby-identifier">:overlay</span>]=<span class="ruby-identifier">proc</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">sym_table</span><span class="ruby-operator">|</span> <span class="ruby-constant">ENV</span>[<span class="ruby-value str">'ACTIVE_CONFIG_OVERLAY'</span>]}
       <span class="ruby-ivar">@priority</span>=[
       <span class="ruby-keyword kw">nil</span>,

@@ -5,14 +5,20 @@
 
 <html>
 <head>
-  <title>_verbose= (ActiveConfig)</title>
+  <title>_config_hash (ActiveConfig)</title>
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
   <link rel="stylesheet" href="../.././rdoc-style.css" type="text/css" media="screen" />
 </head>
 <body class="standalone-code">
-  <pre><span class="ruby-comment cmt"># File lib/active_config.rb, line 180</span>
-  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">_verbose=</span>(<span class="ruby-identifier">x</span>)
-    <span class="ruby-ivar">@@verbose</span> = <span class="ruby-identifier">x</span>.<span class="ruby-identifier">nil?</span> <span class="ruby-value">? </span><span class="ruby-keyword kw">false</span> <span class="ruby-operator">:</span> <span class="ruby-identifier">x</span>;
+  <pre><span class="ruby-comment cmt"># File active_config.rb, line 221</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">_config_hash</span>(<span class="ruby-identifier">name</span>)
+    <span class="ruby-keyword kw">unless</span> <span class="ruby-identifier">result</span> = <span class="ruby-ivar">@cache_hash</span>[<span class="ruby-identifier">name</span>]
+      <span class="ruby-identifier">result</span> = <span class="ruby-ivar">@cache_hash</span>[<span class="ruby-identifier">name</span>] = 
+        <span class="ruby-identifier">_make_indifferent_and_freeze</span>(
+          <span class="ruby-identifier">_load_config_files</span>(<span class="ruby-identifier">name</span>).<span class="ruby-identifier">inject</span>({ }) { <span class="ruby-operator">|</span> <span class="ruby-identifier">n</span>, <span class="ruby-identifier">h</span> <span class="ruby-operator">|</span> <span class="ruby-identifier">n</span>.<span class="ruby-identifier">weave</span>(<span class="ruby-identifier">h</span>, <span class="ruby-keyword kw">false</span>) })
+    <span class="ruby-keyword kw">end</span>
+    <span class="ruby-comment cmt">#$stderr.puts result.inspect</span>
+    <span class="ruby-identifier">result</span>
   <span class="ruby-keyword kw">end</span></pre>
 </body>
 </html>

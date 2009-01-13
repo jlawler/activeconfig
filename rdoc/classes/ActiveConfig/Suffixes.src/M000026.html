@@ -10,8 +10,9 @@
   <link rel="stylesheet" href="../../.././rdoc-style.css" type="text/css" media="screen" />
 </head>
 <body class="standalone-code">
-  <pre><span class="ruby-comment cmt"># File lib/suffixes.rb, line 5</span>
+  <pre><span class="ruby-comment cmt"># File active_config/suffixes.rb, line 6</span>
     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">overlay=</span> <span class="ruby-identifier">new_overlay</span>
+      <span class="ruby-ivar">@parent</span>.<span class="ruby-identifier">_flush_cache</span>
       <span class="ruby-ivar">@symbols</span>[<span class="ruby-identifier">:overlay</span>]=(<span class="ruby-identifier">new_overlay</span>.<span class="ruby-identifier">respond_to?</span>(<span class="ruby-identifier">:upcase</span>) <span class="ruby-operator">?</span> <span class="ruby-identifier">new_overlay</span>.<span class="ruby-identifier">upcase</span> <span class="ruby-operator">:</span> <span class="ruby-identifier">new_overlay</span>)
     <span class="ruby-keyword kw">end</span></pre>
 </body>

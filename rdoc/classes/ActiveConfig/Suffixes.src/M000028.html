@@ -10,9 +10,11 @@
   <link rel="stylesheet" href="../../.././rdoc-style.css" type="text/css" media="screen" />
 </head>
 <body class="standalone-code">
-  <pre><span class="ruby-comment cmt"># File lib/suffixes.rb, line 31</span>
+  <pre><span class="ruby-comment cmt"># File active_config/suffixes.rb, line 34</span>
     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">method_missing</span> <span class="ruby-identifier">method</span>, <span class="ruby-identifier">val</span>=<span class="ruby-keyword kw">nil</span> 
+      <span class="ruby-keyword kw">super</span> <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">method</span>.<span class="ruby-identifier">to_s</span><span class="ruby-operator">=~</span><span class="ruby-regexp re">/^_/</span>
       <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">method</span>.<span class="ruby-identifier">to_s</span><span class="ruby-operator">=~</span><span class="ruby-regexp re">/^(.*)=$/</span>
+        <span class="ruby-ivar">@parent</span>.<span class="ruby-identifier">_flush_cache</span>
         <span class="ruby-keyword kw">return</span> <span class="ruby-ivar">@symbols</span>[<span class="ruby-identifier">$1</span>]=<span class="ruby-identifier">val</span>
       <span class="ruby-keyword kw">end</span>      
       <span class="ruby-identifier">ret</span>=<span class="ruby-ivar">@symbols</span>[<span class="ruby-identifier">method</span>]

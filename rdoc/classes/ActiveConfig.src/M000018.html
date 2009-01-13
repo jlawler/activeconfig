@@ -5,14 +5,21 @@
 
 <html>
 <head>
-  <title>_config_file_loaded (ActiveConfig)</title>
+  <title>_fire_on_load (ActiveConfig)</title>
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
   <link rel="stylesheet" href="../.././rdoc-style.css" type="text/css" media="screen" />
 </head>
 <body class="standalone-code">
-  <pre><span class="ruby-comment cmt"># File lib/active_config.rb, line 192</span>
-  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">_config_file_loaded</span>
-    <span class="ruby-ivar">@@config_file_loaded</span>
+  <pre><span class="ruby-comment cmt"># File active_config.rb, line 264</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">_fire_on_load</span>(<span class="ruby-identifier">name</span>)
+    <span class="ruby-identifier">callbacks</span> = 
+      (<span class="ruby-ivar">@on_load</span>[<span class="ruby-value str">'ANY'</span>] <span class="ruby-operator">||</span> <span class="ruby-constant">EMPTY_ARRAY</span>) <span class="ruby-operator">+</span> 
+      (<span class="ruby-ivar">@on_load</span>[<span class="ruby-identifier">name</span>] <span class="ruby-operator">||</span> <span class="ruby-constant">EMPTY_ARRAY</span>)
+    <span class="ruby-identifier">callbacks</span>.<span class="ruby-identifier">uniq!</span>
+    <span class="ruby-constant">STDERR</span>.<span class="ruby-identifier">puts</span> <span class="ruby-node">&quot;_fire_on_load(#{name.inspect}): callbacks = #{callbacks.inspect}&quot;</span> <span class="ruby-keyword kw">if</span> <span class="ruby-ivar">@verbose</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-operator">!</span> <span class="ruby-identifier">callbacks</span>.<span class="ruby-identifier">empty?</span>
+    <span class="ruby-identifier">callbacks</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span> <span class="ruby-identifier">cb</span> <span class="ruby-operator">|</span>
+      <span class="ruby-identifier">cb</span>.<span class="ruby-identifier">call</span>()
+    <span class="ruby-keyword kw">end</span>
   <span class="ruby-keyword kw">end</span></pre>
 </body>
 </html>
