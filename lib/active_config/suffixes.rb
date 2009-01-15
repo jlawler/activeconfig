@@ -13,22 +13,19 @@ class ActiveConfig
       @symbols[:hostname]=proc {|sym_table| ENV['ACTIVE_CONFIG_HOSTNAME'] ||
        Socket.gethostname
       } 
-      @symbols[:hostname_short]=proc {|sym_table| sym_table[:hostname].call.sub(/\..*$/, '').freeze}
-      @symbols[:mode]=proc { |sym_table|return RAILS_ENV if defined?(RAILS_ENV)}
+      @symbols[:hostname_short]=proc {|sym_table| sym_table[:hostname].call(sym_table).sub(/\..*$/, '').freeze}
+      @symbols[:rails_env]=proc { |sym_table|return RAILS_ENV if defined?(RAILS_ENV)}
       @symbols[:overlay]=proc { |sym_table| ENV['ACTIVE_CONFIG_OVERLAY']}
       @priority=[
        nil,
-       [:overlay, nil],
-       [:local],
-       [:overlay, [:local]],
-       :config,
-       [:overlay, :config],
-       :local_config,
-       [:overlay, :local_config],
+       :rails_env,
+       [:rails_env,:local],
+       :overlay,
+       [:overlay,:local],
+       [:hostname_short, :local],
        :hostname,
-       [:overlay, :hostname],
-       [:hostname, :local_config],
-       [:overlay, [:hostname, :local_config]]
+       [:hostname, :local],
+       :local,
       ]
     end
     def method_missing method, val=nil 

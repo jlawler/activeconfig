@@ -60,8 +60,8 @@ class ActiveConfig::Test < Test::Unit::TestCase
   end
 
 
-  def test_mode
-    assert_equal RAILS_ENV, active_config._suffixes.mode
+  def test_rails_env
+    assert_equal RAILS_ENV, active_config._suffixes.rails_env
   end
 
   def test_suffixes
