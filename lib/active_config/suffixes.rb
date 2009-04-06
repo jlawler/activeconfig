@@ -1,21 +1,41 @@
 class ActiveConfig
+  class HashWithHooks < HashWithIndifferentAccess
+    attr_accessor :write_hooks
+    alias_method :regular_writer_hwh, :regular_writer unless method_defined?(:regular_writer_hwh)
+    def write_hooks
+      @write_hooks||=[]
+    end
+    def regular_writer *args 
+      write_hooks.each{|p|p.call}
+      regular_writer_hwh(*args)
+    end
+    def add_write_hook func=nil,&block
+      self.write_hooks||=[]
+      self.write_hooks << func if Proc===func
+      self.write_hooks << block if Kernel.block_given?
+    end
+  end
   class Suffixes
     attr_writer :priority
     attr_writer :parent
     attr :symbols
+
     def overlay= new_overlay
       @parent._flush_cache
       @symbols[:overlay]=(new_overlay.respond_to?(:upcase) ? new_overlay.upcase : new_overlay)
     end
     def initialize(*args)
       @parent=args.shift
-      @symbols=HashWithIndifferentAccess.new
+      @symbols=HashWithHooks.new
       @symbols[:hostname]=proc {|sym_table| ENV['ACTIVE_CONFIG_HOSTNAME'] ||
        Socket.gethostname
       } 
       @symbols[:hostname_short]=proc {|sym_table| sym_table[:hostname].call(sym_table).sub(/\..*$/, '').freeze}
       @symbols[:rails_env]=proc { |sym_table|return (RAILS_ENV if defined?(RAILS_ENV))||ENV['RAILS_ENV']}
       @symbols[:overlay]=proc { |sym_table| ENV['ACTIVE_CONFIG_OVERLAY']}
+      @symbols.add_write_hook do
+        @parent.flush_cache!
+      end
       @priority=[
        nil,
        :rails_env,

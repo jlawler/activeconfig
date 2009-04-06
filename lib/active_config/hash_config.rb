@@ -1,13 +1,12 @@
 class ActiveConfig
   class HashConfig < HashWithIndifferentAccess
     # HashWithIndifferentAccess#dup always returns HashWithIndifferentAccess!
-    # -- kurt@cashnetusa.com 2007/10/18
+    # -- kurt 2007/10/18
     def dup
       self.class.new(self)
     end
 
 
-    #See Mike if you're confused!!!!!
     # dotted notation can now be used with arguments (useful for creating mock objects)
     # in the YAML file the method name is a key (just like usual), argument(s)
     # form a nested key, and the value will get returned.
@@ -87,7 +86,7 @@ class ActiveConfig
     #   => { :b => 2, :c => 3 } # WTF?
     #
     # Subclasses should *never* override methods and break their protocols!!!!
-    # -- kurt@cashnetusa.com 2007/03/28
+    # -- kurt 2007/03/28
     #
     def update(hash)
       super(hash)

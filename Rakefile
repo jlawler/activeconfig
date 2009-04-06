@@ -22,6 +22,7 @@ task :test do
   begin 
     ENV['ACTIVE_CONFIG_PATH'] =  active_config_multi_paths.reverse.join('') 
     sh "ruby -I lib test/active_config_test_multi.rb"
+    sh "ruby -I lib test/env_test.rb"
     rescue Object => exception2
   end
   x=exception1 ||exception2 

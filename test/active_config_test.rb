@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
-
+require 'pp'
+pp $:
 # TEST_CONFIG_BEGIN
 # enabled: true
 # TEST_CONFIG_END

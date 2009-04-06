@@ -348,7 +348,7 @@ class ActiveConfig
   #
   def disable_reload(&block)
     # This should increment @reload_disabled on entry, decrement on exit.
-    # -- kurt@cashnetusa.com 2007/06/12
+    # -- kurt 2007/06/12
     result = nil
     reload_disabled_save = @reload_disabled
     begin
