@@ -1,6 +1,19 @@
 require 'rubygems'
 Gem::manage_gems
 require 'rake/gempackagetask'
+begin
+  require 'jeweler'
+  Jeweler::Tasks.new do |s|
+    s.name = 'activeconfig'
+    s.author = 'Jeremy Lawler'
+    s.email = 'jlawler@cashnetusa.com'
+    s.homepage = 'http://jlawler.github.com/activeconfig/'
+    s.summary = 'An extremely flexible configuration system'
+    s.authors = ["Jeremy Lawler"]
+  end
+rescue LoadError
+  puts "Jeweler not available. Install it with: sudo gem install technicalpickles-jeweler -s http://gems.github.com"
+end
 
 task :default => :test
 active_config_multi_paths=[File.expand_path(File.dirname(__FILE__) + "/test/active_config_test_multi/patha"),':',File.expand_path(File.dirname(__FILE__) + "/test/active_config_test_multi/pathb")]
