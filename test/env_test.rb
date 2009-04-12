@@ -29,6 +29,7 @@ AC.test.secure_login
 ENV['RAILS_ENV']='production'
 RAILS_ENV = ENV['RAILS_ENV'] 
 
+
 class ActiveConfig::Test < Test::Unit::TestCase
   def active_config
     @active_config||= ActiveConfig.new :suffixes  =>[
@@ -65,9 +66,9 @@ class ActiveConfig::Test < Test::Unit::TestCase
 
 
   def test_cache_clearing
-    assert_equal 'false', AC.test.secure_login
+    assert_equal true, AC.test.secure_login
     AC._suffixes.rails_env=proc { |sym_table|return (RAILS_ENV if defined?(RAILS_ENV))||ENV['RAILS_ENV']}
-    assert_equal 'true', AC.test.secure_login
+    assert_equal false, AC.test.secure_login
   end
 
 

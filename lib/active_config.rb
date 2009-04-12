@@ -80,11 +80,11 @@ class ActiveConfig
     @root_file=opts[:root_file] || 'global' 
     if ActiveConfig::Suffixes===opts[:suffixes]
       @suffixes_obj = opts[:suffixes] 
-      @suffixes_obj.parent=self
     end
+    @suffixes_obj ||= Suffixes.new self, opts[:suffixes]
+    @suffixes_obj.ac_instance=self
     @config_refresh = 
       (opts.has_key?(:config_refresh) ? opts[:config_refresh].to_i : 300)
-    @suffixes_obj ||= Suffixes.new self, opts[:suffixes]
     @on_load = { }
     self._flush_cache
   end
