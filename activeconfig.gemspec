@@ -25,7 +25,6 @@ Gem::Specification.new do |s|
     "test/active_config_test/test_GB.yml",
     "test/active_config_test/test_US.yml",
     "test/active_config_test/test_config.yml",
-    "test/active_config_test/test_development.yml",
     "test/active_config_test/test_local.yml",
     "test/active_config_test/test_production.yml",
     "test/active_config_test_multi.rb",
