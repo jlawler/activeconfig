@@ -36,10 +36,10 @@ class ActiveConfig
       # STDERR.puts "CHF#method_missing(#{method.inspect}, #{args.inspect}) on #{self.inspect}:#{self.class}" if method == 'dup'
       value = self[method]
       case args.size
-        when 0:
+        when 0 then
           # e.g.: ActiveConfig.global.method
           ;
-        when 1:
+        when 1 then
           # e.g.: ActiveConfig.global.method(one_arg)
           value = value.send(args[0])
         else

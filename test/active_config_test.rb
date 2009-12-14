@@ -6,6 +6,10 @@ require 'pp'
 
 # Test target dependencies
 
+# even if a gem is installed, load cnu_config and active_config locally
+dir = File.dirname __FILE__
+$LOAD_PATH.unshift File.join(dir, "..", "lib")
+
 # Configure ActiveConfig to use our test config files.
 RAILS_ENV = 'development'
 ENV['ACTIVE_CONFIG_PATH'] = File.expand_path(File.dirname(__FILE__) + "/active_config_test/")

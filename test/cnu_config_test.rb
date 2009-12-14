@@ -6,6 +6,10 @@
 
 # Test target dependencies
 
+# even if a gem is installed, load cnu_config and active_config locally
+dir = File.dirname __FILE__
+$LOAD_PATH.unshift File.join(dir, "..", "lib")
+
 # Configure CnuConfig to use our test config files.
 RAILS_ENV = 'development'
 ENV['CNU_CONFIG_PATH'] = File.expand_path(File.dirname(__FILE__) + "/cnu_config_test/")
@@ -16,13 +20,13 @@ require 'rubygems'
 # gem 'activesupport'
 require 'active_support'
 
-# Test target
-require 'cnu_config'
-
 # Test dependencies
 require 'test/unit'
 require 'fileutils' # FileUtils.touch
 require 'benchmark'
+
+# Test target
+require 'cnu_config'
 
 
 class CnuConfigClass::Test < Test::Unit::TestCase
