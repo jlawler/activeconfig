@@ -125,7 +125,8 @@ class ActiveConfig::Test < Test::Unit::TestCase
   def test_immutable
     assert active_config.test.frozen?
     assert active_config.test.hash_1.frozen?
-    assert_raise TypeError do
+    # ruby 1.8 and ruby 1.9 raise different exception classes
+    assert_raise TypeError, RuntimeError do
       active_config.test.hash_1[:foo] = 1
     end
   end

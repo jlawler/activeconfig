@@ -31,7 +31,7 @@ class ActiveConfig
        Socket.gethostname
       } 
       @symbols[:hostname_short]=proc {|sym_table| sym_table[:hostname].call(sym_table).sub(/\..*$/, '').freeze}
-      @symbols[:rails_env]=proc { |sym_table|return (RAILS_ENV if defined?(RAILS_ENV))||ENV['RAILS_ENV']}
+      @symbols[:rails_env]=proc { |sym_table| (RAILS_ENV if defined?(RAILS_ENV))||ENV['RAILS_ENV']}
       @symbols[:overlay]=proc { |sym_table| ENV['ACTIVE_CONFIG_OVERLAY']}
       @symbols.add_write_hook do
         ac_instance.flush_cache

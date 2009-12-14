@@ -48,6 +48,7 @@ class CnuConfigClass < ActiveConfig
   end
   def _config_path
     @config_path||= ENV['CNU_CONFIG_PATH']
+    super
   end
 end
 CnuConfig=CnuConfigClass.new
