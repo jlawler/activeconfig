@@ -77,9 +77,14 @@ class ActiveConfig
   #FIXME TODO
   def initialize opts={}
     @config_path=opts[:path] || ENV['ACTIVE_CONFIG_PATH'] || (defined?(RAILS_ROOT) ? File.join(RAILS_ROOT,'etc') : nil)
+    @opts=opts
+    if opts[:one_file]
+    @root_file=@config_path 
+    else
     @root_file=opts[:root_file] || 'global' 
-    if ActiveConfig::Suffixes===opts[:suffixes]
-      @suffixes_obj = opts[:suffixes] 
+      if ActiveConfig::Suffixes===opts[:suffixes]
+        @suffixes_obj = opts[:suffixes] 
+      end
     end
     @suffixes_obj ||= Suffixes.new self, opts[:suffixes]
     @suffixes_obj.ac_instance=self
@@ -211,6 +216,7 @@ class ActiveConfig
   # Returns a list of all relavant config files as specified
   # by the suffixes object.
   def _config_files(name) 
+    return [name] if File.exists?(name) and not File.directory?(name)
     _suffixes.for(name).inject([]) do | files,name_x |
       _config_path.reverse.inject(files) do |files, dir |
         files <<  File.join(dir, name_x.to_s + '.yml')
@@ -364,7 +370,7 @@ class ActiveConfig
   ##
   # Gets a value from the global config file
   #
-  def [](key, file=_root_file)
+  def [](key, file=@root_file)
     get_config_file(file)[key]
   end
 
@@ -377,6 +383,7 @@ class ActiveConfig
   #   ActiveConfig.global.foo   => ActiveConfig.with_file(:global).foo
   #
   def method_missing(method, *args)
+    return self[method.to_sym] if @opts[:one_file] 
     if method.to_s=~/^_(.*)/
       _flush_cache 
       return @suffixes.send($1, *args)
