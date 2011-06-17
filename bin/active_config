@@ -23,9 +23,7 @@
 
 $:.unshift File.expand_path(File.dirname(__FILE__) + '/lib/ruby')
 
-# Need to remove active_config's dependency on activesupport.
 require 'rubygems'
-gem 'activesupport'
 
 # Yuck!
 RAILS_ENV = ENV['RAILS_ENV'] || 'development'

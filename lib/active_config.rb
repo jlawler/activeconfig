@@ -1,11 +1,7 @@
 require 'socket'
 require 'yaml'
 require 'active_config/hash_weave' # Hash#weave
-# REMOVE DEPENDENCY ON active_support.
 require 'rubygems'
-require 'active_support'
-require 'active_support/core_ext'
-require 'active_support/core_ext/hash/indifferent_access'
 require 'active_config/hash_config'
 require 'active_config/suffixes'
 require 'erb'
@@ -196,15 +192,11 @@ class ActiveConfig
     # STDERR.puts "get_config_file(#{name.inspect})"
     name = name.to_s # if name.is_a?(Symbol)
     now = Time.now
-#    $stderr.puts (!!@reload_disabled).inspect
-#    $stderr.puts (@hash_times[name.to_sym]).inspect
-#$stderr.puts ( now.to_i - @hash_times[name.to_sym] > @config_refresh).inspect
-    #return cached if cached is still good
     return @cache_hash[name.to_sym] if 
       (now.to_i - @hash_times[name.to_sym]  < @config_refresh) 
-    #return cached if we have something cached and no reload_disabled flag
+    # return cached if we have something cached and no reload_disabled flag
     return @cache_hash[name.to_sym] if @cache_hash[name.to_sym] and @reload_disabled
-#    $stderr.puts "NOT USING CACHED AND RELOAD DISABLED" if @reload_disabled
+    # $stderr.puts "NOT USING CACHED AND RELOAD DISABLED" if @reload_disabled
     @cache_hash[name.to_sym]=begin
       x = _config_hash(name)
       @hash_times[name.to_sym]=now.to_i
@@ -227,7 +219,7 @@ class ActiveConfig
   def _config_hash(name)
     unless result = @cache_hash[name]
       result = @cache_hash[name] = 
-        _make_indifferent_and_freeze(
+        HashConfig._make_indifferent_and_freeze(
           _load_config_files(name).inject({ }) { | n, h | n.weave(h, false) })
     end
     #$stderr.puts result.inspect
@@ -295,32 +287,6 @@ class ActiveConfig
     return nil if ret.empty?
     ret
   end
-
-  ## 
-  # Recursively makes hashes into frozen IndifferentAccess ConfigFakerHash
-  # Arrays are also traversed and frozen.
-  #
-  def _make_indifferent_and_freeze(x)
-    return x if x.frozen?
-    case x
-    when HashConfig
-        x.each_pair do | k, v |
-          x[k] = _make_indifferent_and_freeze(v)
-        end
-    when Hash
-      x = HashConfig.new.merge!(x)
-      x.each_pair do | k, v |
-        x[k] = _make_indifferent_and_freeze(v)
-      end
-      # STDERR.puts "x = #{x.inspect}:#{x.class}"
-    when Array
-      x.collect!  do | v |
-        _make_indifferent_and_freeze(v)
-      end
-    end
-    x.freeze
-  end
-
 
   def with_file(name, *args)
     # STDERR.puts "with_file(#{name.inspect}, #{args.inspect})"; result = 

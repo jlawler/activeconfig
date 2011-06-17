@@ -13,8 +13,6 @@ ENV['ACTIVE_CONFIG_PATH'] = File.expand_path(File.dirname(__FILE__) + "/active_c
 
 # Test environment.
 require 'rubygems'
-# gem 'activesupport'
-require 'active_support'
 
 # Test target
 require 'active_config'

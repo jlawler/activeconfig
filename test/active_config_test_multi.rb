@@ -16,8 +16,6 @@ ENV.delete('ACTIVE_CONFIG_OVERLAY') # Avoid gb magic.
 
 # Test environment.
 require 'rubygems'
-# gem 'activesupport'
-require 'active_support'
 
 # Test target
 require 'active_config'

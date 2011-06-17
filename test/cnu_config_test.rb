@@ -17,8 +17,6 @@ ENV.delete('CNU_CONFIG_OVERLAY') # Avoid gb magic.
 
 # Test environment.
 require 'rubygems'
-# gem 'activesupport'
-require 'active_support'
 
 # Test dependencies
 require 'test/unit'
