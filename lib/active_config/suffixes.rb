@@ -42,6 +42,7 @@ class ActiveConfig
        [:rails_env,:local],
        :overlay,
        [:overlay,:local],
+       [:hostname_short],
        [:hostname_short, :local],
        :hostname,
        [:hostname, :local],
