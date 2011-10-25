@@ -166,7 +166,7 @@ class ActiveConfig
       if /^\s*#\s*ACTIVE_CONFIG\s*:\s*ERB/i.match(val)
         # Prepare a object visible from ERb to
         # allow basic substitutions into YAMLs.
-        active_config = HashWithIndifferentAccess.new({
+        active_config = HashConfig.new({
           :config_file => filename,
           :config_directory => File.dirname(filename),
           :config_name => name,
@@ -179,6 +179,7 @@ class ActiveConfig
       # STDERR.puts "ActiveConfig: loaded #{filename.inspect} => #{val.inspect}"
       (@config_file_loaded ||= { })[name] = config_files
       rescue Exception => e
+        raise
       end
       @file_cache[filename]=val
       @file_times[filename]=mod_time
