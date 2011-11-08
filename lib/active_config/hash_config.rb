@@ -2,12 +2,8 @@
 class ActiveConfig
   class HashConfig < Hash
   def initialize(constructor = {})
-    if constructor.is_a?(Hash)
-      super()
-      update(constructor)
-    else
-      super(constructor)
-    end
+    super()
+    update(constructor)
   end
   def default(key = nil)
     if key.is_a?(Symbol) && include?(key = key.to_s)
@@ -204,27 +200,6 @@ class ActiveConfig
       key == @@no_key ? self['default'] : default_Hash(key == @@no_key ? nil : key)
     end
     
-    ## 
-    # HashWithIndifferentAccess#update is broken!
-    # This took way too long to figure this out:
-    #
-    # Hash#update returns self,
-    # BUT,
-    # HashWithIndifferentAccess#update does not!
-    #
-    #   { :a => 1 }.update({ :b => 2, :c => 3 }) 
-    #   => { :a => 1, :b => 2, :c => 3 }
-    #
-    #   HashWithIndifferentAccess.new({ :a => 1 }).update({ :b => 2, :c => 3 })
-    #   => { :b => 2, :c => 3 } # WTF?
-    #
-    # Subclasses should *never* override methods and break their protocols!!!!
-    # -- kurt 2007/03/28
-    #
-    def update(hash)
-      super(hash)
-      self
-    end
   protected
     def convert_key(key)
       key.kind_of?(Symbol) ? key.to_s : key
