@@ -57,7 +57,6 @@ Gem::Specification.new do |s|
   s.test_files = [
     "test/env_test.rb",
      "test/active_config_test_multi.rb",
-     "test/active_config_test_single.rb",
      "test/cnu_config_test.rb",
      "test/active_config_test.rb"
   ]
