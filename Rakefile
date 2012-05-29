@@ -12,7 +12,7 @@ begin
     s.authors = ["Jeremy Lawler"]
   end
 rescue LoadError
-  puts "Jeweler not available. Install it with: sudo gem install technicalpickles-jeweler -s http://gems.github.com"
+  puts "Jeweler not available. Install it with: sudo gem install jeweler "
 end
 
 task :default => :test
