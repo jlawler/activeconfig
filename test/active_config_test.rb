@@ -61,7 +61,12 @@ class ActiveConfig::Test < Test::Unit::TestCase
     super
   end
 
-
+  def test_global
+    assert_equal 101,active_config.using_array_index
+  end
+  def test_gbracket
+    assert_equal 101,active_config[:using_array_index]
+  end
   def test_rails_env
     assert_equal RAILS_ENV, active_config._suffixes.rails_env
   end
