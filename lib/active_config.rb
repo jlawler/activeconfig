@@ -355,6 +355,11 @@ class ActiveConfig
       _flush_cache 
       return @suffixes.send($1, *args)
     else 
+      if @root_file && rf=get_config_file(@root_file)      
+        if rf.has_key?(method.to_sym) || rf.has_key?(method.to_s)
+          return with_file(@root_file).send(method,*args)
+        end
+      end
       value = with_file(method, *args)
       value
     end
