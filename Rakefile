@@ -1,14 +1,17 @@
 require 'rubygems'
 
-require 'rake/gempackagetask'
+require 'rubygems/package_task'
 begin
   require 'jeweler'
   Jeweler::Tasks.new do |s|
     s.name = 'activeconfig'
     s.author = 'Jeremy Lawler'
-    s.email = 'jlawler@cashnetusa.com'
+    s.email = 'jeremylawler@gmail.com'
     s.homepage = 'http://jlawler.github.com/activeconfig/'
     s.summary = 'An extremely flexible configuration system'
+    s.description = 'An extremely flexible configuration system.
+Has the ability for certain values to be "overridden" when conditions are met.
+For example, you could have your production API keys only get read when the Rails.env == "production"'
     s.authors = ["Jeremy Lawler"]
   end
 rescue LoadError
@@ -16,17 +19,11 @@ rescue LoadError
 end
 
 task :default => :test
-active_config_multi_paths=[
-  File.expand_path(File.dirname(__FILE__) + "/test/active_config_test_multi/patha"),
-  File.expand_path(File.dirname(__FILE__) + "/test/active_config_test_multi/pathb"),
-  File.expand_path(File.dirname(__FILE__) + "/test/active_config_test_multi/pathc")]
-#active_config_multi_paths=[File.expand_path(File.dirname(__FILE__) + "/test/active_config_test_multi/patha"),':',File.expand_path(File.dirname(__FILE__) + "/test/active_config_test_multi/pathb")]
 
 task :rdoc do
   sh "rm -rf #{File.dirname(__FILE__)}/doc"
   sh "cd lib && rdoc -o ../doc " 
 end
-require 'rake'
 
 task :test do 
   Dir['*/*_test.rb'].each do |f|
