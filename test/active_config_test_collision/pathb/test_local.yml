@@ -1,0 +1,2 @@
+default: "WIN" # Test for #default override for .default notation
+

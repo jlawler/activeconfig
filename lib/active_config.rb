@@ -25,6 +25,7 @@ require 'erb'
 #   foo: "foo"
 #   bar: "bar"
 #   bok: "bok"
+
 # ...
 # test_local.yaml:
 # ...
@@ -58,6 +59,7 @@ require 'erb'
 #
 
 class ActiveConfig
+  class ActiveConfig::DuplicateConfig < Exception; end
   EMPTY_ARRAY = [ ].freeze unless defined? EMPTY_ARRAY
   def _suffixes
     @suffixes_obj
@@ -75,7 +77,7 @@ class ActiveConfig
     @config_path=opts[:path] || ENV['ACTIVE_CONFIG_PATH'] || (defined?(RAILS_ROOT) ? File.join(RAILS_ROOT,'etc') : nil)
     @opts=opts
     if opts[:one_file]
-    @root_file=@config_path 
+      @root_file=@config_path 
     else
     @root_file=opts[:root_file] || 'global' 
       if ActiveConfig::Suffixes===opts[:suffixes]
@@ -88,6 +90,20 @@ class ActiveConfig
       (opts.has_key?(:config_refresh) ? opts[:config_refresh].to_i : 300)
     @on_load = { }
     self._flush_cache
+    dups_h=Hash.new{|h,e|h[e]=[]}
+    self._config_path.map{|e|
+      if File.exists?(e) and File.directory?(e)
+        Dir[e + '/*'].map{|f|
+          if File.file?(f)
+            dups_h[File.basename(f)] << f
+          end
+        }
+      else
+        STDERR.puts "WARNING:  Active Config Path NOT FOUND #{e}" unless opts[:quiet]
+      end
+    }
+    dups = dups_h.to_a.select{|k,v|v.size>=2}
+    raise ActiveConfig::DuplicateConfig.new(dups.map{|e|"Duplicate file #{e.first} found in \n#{e.last.map{|el|"\t"+el}.join("\n")}"}.join("\n")) if dups.size>0
   end
   def _config_path
     @config_path_ary ||=

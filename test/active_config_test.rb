@@ -18,6 +18,7 @@ ENV.delete('ACTIVE_CONFIG_OVERLAY') # Avoid gb magic.
 # Test environment.
 require 'rubygems'
 
+$:.unshift File.expand_path("../../lib",__FILE__)
 # Test target
 require 'active_config'
 

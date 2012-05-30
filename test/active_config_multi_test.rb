@@ -1,4 +1,6 @@
 #!/usr/bin/env ruby
+$:.unshift File.expand_path("../../lib",__FILE__)
+ENV['ACTIVE_CONFIG_PATH']=[File.expand_path("../active_config_test_multi/patha",__FILE__),File.expand_path("../active_config_test_multi/pathb",__FILE__)].join(':')
 
 # TEST_CONFIG_BEGIN
 # enabled: true
