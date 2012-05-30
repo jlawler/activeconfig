@@ -1,5 +1,32 @@
 #!/usr/bin/env ruby
+require 'optparse'
+STDERR.puts ARGV.inspect
+options = {}
+OptionParser.new do |opts|
+  opts.banner = "Usage: active_config [options]"
 
+
+  opts.on("-v", "--[no-]verbose", "Run verbosely") do |v|
+    options[:verbose] = v
+  end
+  opts.on("-V", "--version", "display version and exit") do |v|
+    options[:verbose] = v
+  end
+
+end.parse!
+if options[:verbose]
+  require 'yaml'
+  vs=YAML.load(File.read(File.expand_path('../../VERSION.yml',__FILE__) ))
+  n=[:major,:minor,:patch,:build].map{|e|vs[e]}
+  n.pop if n.last.nil? or n==''
+  puts n.join('.')
+end
+STDERR.puts ARGV.inspect
+exit
+# create:
+#   create an etc dir
+#   if a lib,ruby, or src directory exists, add a conf.rb file
+#
 =begin rdoc
 
 # Prints info from  to STDOUT.
@@ -20,8 +47,6 @@
 # PRODDB=activeapp_dev
 
 =end
-
-$:.unshift File.expand_path(File.dirname(__FILE__) + '/lib/ruby')
 
 require 'rubygems'
 

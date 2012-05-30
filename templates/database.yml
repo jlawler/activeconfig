@@ -1,0 +1,18 @@
+<%
+__CONFIG_VARIABLE__.database.each_pair do |env_name, settings|
+## We iterate over all the connection_name -> connection_settings pairs.
+#
+#  We should only get hashes here, but since we don't want to limit implementions
+#  of ActiveConfig, we only check if it responds to each_pair
+next unless settings.respond_to?(:each_pair)
+%>
+
+<%=env_name%>:
+<%
+settings.each_pair do |k,v|
+%>
+  <%=k%>: "<%=v%>"
+<%end%>
+
+<%end%>
+
