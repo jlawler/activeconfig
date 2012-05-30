@@ -10,8 +10,8 @@ Gem::Specification.new do |s|
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Jeremy Lawler"]
   s.date = "2012-05-30"
-  s.description = "An extremely flexible configuration system.\nHas the ability for certain values to be \"overridden\" when conditions are met.  \nFor example, you could have your production API keys only get read when the Rails.env == \"production\""
-  s.email = "jlawler@cashnetusa.com"
+  s.description = "An extremely flexible configuration system.\ns the ability for certain values to be \"overridden\" when conditions are met.\nr example, you could have your production API keys only get read when the Rails.env == \"production\""
+  s.email = "jeremylawler@gmail.com"
   s.executables = ["active_config"]
   s.files = [
     "Rakefile",
@@ -55,9 +55,18 @@ Gem::Specification.new do |s|
     s.specification_version = 3
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
+      s.add_development_dependency(%q<rdoc>, ["~> 3.12"])
+      s.add_development_dependency(%q<bundler>, ["> 1.0.0"])
+      s.add_development_dependency(%q<jeweler>, ["~> 1.8.3"])
     else
+      s.add_dependency(%q<rdoc>, ["~> 3.12"])
+      s.add_dependency(%q<bundler>, ["> 1.0.0"])
+      s.add_dependency(%q<jeweler>, ["~> 1.8.3"])
     end
   else
+    s.add_dependency(%q<rdoc>, ["~> 3.12"])
+    s.add_dependency(%q<bundler>, ["> 1.0.0"])
+    s.add_dependency(%q<jeweler>, ["~> 1.8.3"])
   end
 end
 
