@@ -14,6 +14,7 @@ Gem::Specification.new do |s|
   s.email = "jeremylawler@gmail.com"
   s.executables = ["active_config"]
   s.files = [
+    "Gemfile",
     "Rakefile",
     "VERSION.yml",
     "activeconfig.gemspec",
