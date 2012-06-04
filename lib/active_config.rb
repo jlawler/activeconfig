@@ -74,6 +74,11 @@ class ActiveConfig
   #                 
   #FIXME TODO
   def initialize opts={}
+    opts = Hash[:path,opts] if opts.is_a?(String) or opts.is_a?(Array)
+    if opts.is_a?(Array) 
+      @config_path_ary=opts 
+      opts=Hash[:path,opts]
+    end 
     @config_path=opts[:path] || ENV['ACTIVE_CONFIG_PATH'] || (defined?(RAILS_ROOT) ? File.join(RAILS_ROOT,'etc') : nil)
     @opts=opts
     if opts[:one_file]
