@@ -76,8 +76,7 @@ class ActiveConfig
   def initialize opts={}
     opts = Hash[:path,opts] if opts.is_a?(String) or opts.is_a?(Array)
     if opts.is_a?(Array) 
-      @config_path_ary=opts 
-      opts=Hash[:path,opts]
+      opts=Hash[:path,opts.join(':')]
     end 
     @config_path=opts[:path] || ENV['ACTIVE_CONFIG_PATH'] || (defined?(RAILS_ROOT) ? File.join(RAILS_ROOT,'etc') : nil)
     @opts=opts
@@ -115,7 +114,7 @@ class ActiveConfig
       begin
         path_sep = (@config_path =~ /;/) ? /;/ : /:/ # Make Wesha happy
         path = @config_path.split(path_sep).reject{ | x | x.empty? }
-        path.map!{|x| x.freeze }.freeze
+        path.map!{|x| File.expand_path(x).freeze }.freeze
       end
   end
 
