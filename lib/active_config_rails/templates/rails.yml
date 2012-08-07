@@ -1,0 +1,8 @@
+# If you need to force a rails env for a host
+# make a host override of this file and
+# set the force_env key.
+#
+# Setting force_env in a non-host override is
+# crazy dangerous.
+
+force_env: ~
