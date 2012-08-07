@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "activeconfig"
-  s.version = "0.5.6"
+  s.version = "0.6.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Jeremy Lawler"]
-  s.date = "2012-06-04"
+  s.date = "2012-08-07"
   s.description = "An extremely flexible configuration system.\ns the ability for certain values to be \"overridden\" when conditions are met.\nr example, you could have your production API keys only get read when the Rails.env == \"production\""
   s.email = "jeremylawler@gmail.com"
   s.executables = ["active_config"]
@@ -23,13 +23,10 @@ Gem::Specification.new do |s|
     "lib/active_config/hash_config.rb",
     "lib/active_config/hash_weave.rb",
     "lib/active_config/suffixes.rb",
-    "pkg/activeconfig-0.1.4.gem",
-    "pkg/activeconfig-0.2.0.gem",
-    "pkg/activeconfig-0.3.0.gem",
-    "pkg/activeconfig-0.4.0.gem",
-    "pkg/activeconfig-0.4.1.gem",
-    "pkg/activeconfig-0.5.0.gem",
-    "pkg/activeconfig-0.5.1.gem",
+    "lib/active_config_rails.rb",
+    "lib/active_config_rails/templates/active_config_initializer.rb",
+    "lib/active_config_rails/templates/database.yml",
+    "lib/activeconfig.rb",
     "test/active_config_collision_test.rb",
     "test/active_config_multi_test.rb",
     "test/active_config_test.rb",
