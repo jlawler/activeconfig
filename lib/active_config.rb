@@ -6,7 +6,6 @@ require 'active_config/hash_config'
 require 'active_config/suffixes'
 require 'erb'
 
-
 ##
 # See LICENSE.txt for details
 #

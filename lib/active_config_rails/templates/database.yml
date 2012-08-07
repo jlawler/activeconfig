@@ -1,0 +1,5 @@
+#The contents you are looking for are now in etc/database.yml
+#Make any changes there.
+
+<%=CONF.database.to_yaml %>
+
