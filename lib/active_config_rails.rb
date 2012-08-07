@@ -18,6 +18,7 @@ module ActiveConfigRails
         FileUtils.cp(relative_to_original_destination_root('config/database.yml'),'etc/database.yml')
         remove_file('config/database.yml')
         copy_file 'database.yml', 'config/database.yml'
+        copy_file 'rails.yml', 'etc/rails.yml'
 
 
         #comment = "\n  # Set the logging destination(s)\n  %s\n"
