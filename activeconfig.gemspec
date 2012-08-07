@@ -26,6 +26,7 @@ Gem::Specification.new do |s|
     "lib/active_config_rails.rb",
     "lib/active_config_rails/templates/active_config_initializer.rb",
     "lib/active_config_rails/templates/database.yml",
+    "lib/active_config_rails/templates/rails.yml",
     "lib/activeconfig.rb",
     "test/active_config_collision_test.rb",
     "test/active_config_multi_test.rb",
