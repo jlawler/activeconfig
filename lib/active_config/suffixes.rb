@@ -34,8 +34,10 @@ class ActiveConfig
       @symbols[:rails_env]=proc { |sym_table| 
         if defined?(RAILS_ENV)
           RAILS_ENV
-        elsif defined? Rails
+        elsif defined?(Rails) and Rails.respond_to?(:env)
           Rails.env
+        elsif ENV['ACTIVE_CONFIG_FORCE_RAILS_ENV']
+          ENV['ACTIVE_CONFIG_FORCE_RAILS_ENV']  
         else
           ENV['RAILS_ENV']
         end
