@@ -1,8 +1,12 @@
-# If you need to force a rails env for a host
+# If you need to set a rails env for a host
 # make a host override of this file and
-# set the force_env key.
+# set the env key.  This will not override
+# the RAILS_ENV environment variable.
 #
-# Setting force_env in a non-host override is
-# crazy dangerous.
+# On the other hand, force_env WILL override the 
+# RAILS_ENV environment variable.  In short, 
+# both of thse are crazy dangerous if they 
+# aren't in a host override.  In fact, force_env
+# is probably pretty close to bat-shit-crazy.
 
-force_env: ~
+env: ~
