@@ -19,13 +19,13 @@ ActiveConfig
 
     environmental_var: "bar"
 
-5. Run this code in IRB in development:
+5. Run this code in development:
 
     CONF.defaults.environmental_var
 
 You will get "foo"
 
-6. Run this code in IRB in production:
+6. Run this code in production:
 
     CONF.defaults.environment_var
 
