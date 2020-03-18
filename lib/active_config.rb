@@ -95,7 +95,7 @@ class ActiveConfig
     self._flush_cache
     dups_h=Hash.new{|h,e|h[e]=[]}
     self._config_path.map{|e|
-      if File.exists?(e) and File.directory?(e)
+      if File.exist?(e) and File.directory?(e)
         Dir[e + '/*'].map{|f|
           if File.file?(f)
             dups_h[File.basename(f)] << f
@@ -174,7 +174,7 @@ class ActiveConfig
       filename=f
       val=nil
       mod_time=nil
-      next unless File.exists?(filename)
+      next unless File.exist?(filename)
       next(@file_cache[filename]) unless (mod_time=File.stat(filename).mtime) != @file_times[filename]
       begin
       File.open( filename ) { | yf |
@@ -228,7 +228,7 @@ class ActiveConfig
   # Returns a list of all relavant config files as specified
   # by the suffixes object.
   def _config_files(name) 
-    return [name] if File.exists?(name) and not File.directory?(name)
+    return [name] if File.exist?(name) and not File.directory?(name)
     _suffixes.for(name).inject([]) do | files,name_x |
       _config_path.reverse.inject(files) do |files, dir |
         files <<  File.join(dir, name_x.to_s + '.yml')
